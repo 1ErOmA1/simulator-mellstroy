@@ -1,12 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../theme.dart';
+import 'stats_row.dart';
 
 class HeaderCard extends StatelessWidget {
-  const HeaderCard({super.key});
+  final int views;
+  final int subs;
+  final double money;
+  final double income;
+  final int xp;
+  final int level;
+  final VoidCallback onAvatarTap; // 👈 добавлен колбэк
+
+  const HeaderCard({
+    super.key,
+    required this.views,
+    required this.subs,
+    required this.money,
+    required this.income,
+    required this.xp,
+    required this.level,
+    required this.onAvatarTap,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final int maxXp = 10 * level;
+    final double progress = xp / maxXp;
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(22),
@@ -25,60 +45,57 @@ class HeaderCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-              gradient: kCardGradient,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            // 👇 аватарка с XP-прогрессом
+            GestureDetector(
+              onTap: onAvatarTap,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 72,
+                    height: 72,
+                    child: CircularProgressIndicator(
+                      value: progress.clamp(0.0, 1.0),
+                      strokeWidth: 6,
+                      backgroundColor: Colors.white.withOpacity(0.08),
+                      valueColor:
+                          const AlwaysStoppedAnimation(Color(0xFFFFC857)),
+                    ),
+                  ),
+                  Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      color: Colors.white.withOpacity(0.12),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Image.asset(
+                      'assets/images/icon.png',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.white.withOpacity(0.12),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Image.asset(
-                    'assets/images/icon.png',
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Симулятор Меллстроя',
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Нажимай на стрим, чтобы получать просмотры и деньги!',
-                        style: GoogleFonts.poppins(
-                          color: Colors.white70,
-                          fontSize: 12,
-                          height: 1.05,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+
+            const SizedBox(width: 12),
+
+            // 📊 Статистика
+            Expanded(
+              child: StatsRow(
+                views: views,
+                subs: subs,
+                money: money,
+                income: income,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

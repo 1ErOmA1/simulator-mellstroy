@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'widgets/header_card.dart';
 import 'widgets/level_card.dart';
-import 'widgets/stats_row.dart';
 import 'widgets/stream_image.dart';
 import 'widgets/bottom_tabs.dart';
 import 'theme.dart';
@@ -22,6 +21,7 @@ class _MellHomeState extends State<MellHome> {
   int xp = 0;
   int level = 1;
 
+  bool _showLevelCard = false;
   Timer? _timer;
 
   @override
@@ -53,8 +53,14 @@ class _MellHomeState extends State<MellHome> {
       if (xp >= 10 * level) {
         level++;
         xp = 0;
-        income += 2; // повышение дохода за уровень
+        income += 2; // повышение дохода при уровне
       }
+    });
+  }
+
+  void _toggleLevelCard() {
+    setState(() {
+      _showLevelCard = !_showLevelCard;
     });
   }
 
@@ -71,16 +77,51 @@ class _MellHomeState extends State<MellHome> {
                 constraints: const BoxConstraints(maxWidth: 420),
                 child: Column(
                   children: [
-                    const HeaderCard(),
-                    const SizedBox(height: 14),
-                    LevelCard(level: level, xp: xp),
-                    const SizedBox(height: 12),
-                    StatsRow(
+                    // Верхняя карточка с аватаркой и статистикой
+                    HeaderCard(
                       views: views,
                       subs: subs,
                       money: money,
                       income: income,
+                      xp: xp,
+                      level: level,
+                      onAvatarTap: _toggleLevelCard,
                     ),
+
+                    // Анимация появления LevelCard под HeaderCard
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 400),
+                      transitionBuilder: (child, animation) {
+                        final slideAnimation = Tween<Offset>(
+                          begin: const Offset(0, -0.1),
+                          end: Offset.zero,
+                        ).animate(CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOutCubic,
+                        ));
+
+                        final fadeAnimation = CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeInOut,
+                        );
+
+                        return SlideTransition(
+                          position: slideAnimation,
+                          child: FadeTransition(
+                            opacity: fadeAnimation,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: _showLevelCard
+                          ? Padding(
+                              key: const ValueKey('level'),
+                              padding: const EdgeInsets.only(top: 14),
+                              child: LevelCard(level: level, xp: xp),
+                            )
+                          : const SizedBox(key: ValueKey('empty')),
+                    ),
+
                     const SizedBox(height: 18),
                     StreamImage(onTap: _onStreamTap),
                     const SizedBox(height: 16),
