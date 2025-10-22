@@ -43,22 +43,83 @@ class _MellHomeState extends State<MellHome> {
     super.dispose();
   }
 
+  // void _onStreamTap() {
+  //   setState(() {
+  //     views += 1;
+  //     xp += 1;
+
+  //     int earnedSubs = views ~/ 100;
+  //     int earnedDollars = views ~/ 100;
+
+  //     if (earnedSubs > subs) {
+  //       subs = earnedSubs;
+  //       money += (earnedDollars - money.floor()).toDouble();
+  //     }
+
+  //     if (xp >= 10 * level) {
+  //       level++;
+  //       xp = 0;
+  //       income += 2;
+  //     }
+  //   });
+  // }
+
   void _onStreamTap() {
     setState(() {
-      views++;
-      money += 1;
+      views += 1;
       xp += 1;
+
+      int earnedSubs = views ~/ 100;
+      int earnedDollars = views ~/ 100;
+
+      if (earnedSubs > subs) {
+        subs = earnedSubs;
+        money += (earnedDollars - money.floor()).toDouble();
+      }
+
       if (xp >= 10 * level) {
         level++;
         xp = 0;
-        income += 2;
       }
     });
   }
 
+  // void _onStreamTap() {
+  //   setState(() {
+  //     views += 1; // каждый клик = +1 просмотр
+  //     xp += 1; // XP остаётся как раньше
+
+  //     // каждые 100 просмотров = +1$
+  //     if (views % 100 == 0) {
+  //       money += 1;
+  //     }
+
+  //     // проверяем уровень
+  //     if (xp >= 10 * level) {
+  //       level++;
+  //       xp = 0;
+  //       income += 2; // повышение пассивного дохода
+  //     }
+  //   });
+  // }
+
   void _toggleLevelCard() {
     setState(() {
       _showLevelCard = !_showLevelCard;
+    });
+  }
+
+  // --- передаём в BottomTabs ---
+  void _changeMoney(double delta) {
+    setState(() {
+      money += delta;
+      if (money < 0) money = 0;
+    });
+  }
+
+  void _applyUpgrade(double click, double passive) {
+    setState(() {
+      income += passive; // добавляем пассивный доход
     });
   }
 
@@ -68,9 +129,7 @@ class _MellHomeState extends State<MellHome> {
       backgroundColor: Colors.black,
       resizeToAvoidBottomInset: false,
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: kAppGradient,
-        ),
+        decoration: const BoxDecoration(gradient: kAppGradient),
         child: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -106,9 +165,7 @@ class _MellHomeState extends State<MellHome> {
                         return SlideTransition(
                           position: slideAnimation,
                           child: FadeTransition(
-                            opacity: fadeAnimation,
-                            child: child,
-                          ),
+                              opacity: fadeAnimation, child: child),
                         );
                       },
                       child: _showLevelCard
@@ -123,9 +180,13 @@ class _MellHomeState extends State<MellHome> {
                 ),
               ),
               StreamImage(onTap: _onStreamTap),
-              const Padding(
-                padding: EdgeInsets.all(18.0),
-                child: BottomTabs(),
+              Padding(
+                padding: const EdgeInsets.all(18.0),
+                child: BottomTabs(
+                  money: money,
+                  onMoneyChange: _changeMoney,
+                  onUpgrade: _applyUpgrade,
+                ),
               ),
             ],
           ),

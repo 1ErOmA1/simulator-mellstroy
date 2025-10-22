@@ -108,11 +108,13 @@ class _UpgradesTabState extends State<UpgradesTab> {
   void buyUpgrade(int index) {
     var upgrade = upgrades[index];
     double price = upgrade['price'];
+
     if (widget.money >= price) {
       setState(() {
         upgrades[index]['level']++;
-        upgrades[index]['price'] *= 1.35; // увеличиваем цену
+        upgrades[index]['price'] *= 1.35;
       });
+
       widget.onMoneyChange(-price);
       widget.onUpgrade(upgrade['click'], upgrade['passive']);
     }
@@ -121,10 +123,8 @@ class _UpgradesTabState extends State<UpgradesTab> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      key: const ValueKey('upgrades'),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: SingleChildScrollView(
-        // 👈 добавляем прокрутку
         physics: const BouncingScrollPhysics(),
         child: Column(
           children: upgrades.map((item) {
@@ -143,7 +143,6 @@ class _UpgradesTabState extends State<UpgradesTab> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Название и уровень
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -165,8 +164,6 @@ class _UpgradesTabState extends State<UpgradesTab> {
                       ),
                     ],
                   ),
-
-                  // Кнопка "Купить"
                   ElevatedButton(
                     onPressed: canBuy ? () => buyUpgrade(index) : null,
                     style: ElevatedButton.styleFrom(

@@ -22,10 +22,9 @@ class StatsRow extends StatelessWidget {
       children: [
         StatBox(icon: Icons.remove_red_eye_outlined, value: '$views'),
         StatBox(icon: Icons.group_outlined, value: '$subs'),
+        StatBox(icon: Icons.attach_money, value: '${money.toStringAsFixed(0)}'),
         StatBox(
-            icon: Icons.attach_money, value: '${money.toStringAsFixed(0)}₽'),
-        StatBox(
-            icon: Icons.trending_up, value: '${income.toStringAsFixed(0)}₽/с'),
+            icon: Icons.trending_up, value: '${income.toStringAsFixed(0)}/с'),
       ],
     );
   }

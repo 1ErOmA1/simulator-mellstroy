@@ -4,29 +4,22 @@ import 'upgrades_tab.dart';
 import 'achievements_tab.dart';
 
 class BottomTabs extends StatefulWidget {
-  const BottomTabs({super.key});
+  final double money;
+  final Function(double) onMoneyChange;
+  final Function(double, double) onUpgrade;
+
+  const BottomTabs({
+    super.key,
+    required this.money,
+    required this.onMoneyChange,
+    required this.onUpgrade,
+  });
 
   @override
   State<BottomTabs> createState() => _BottomTabsState();
 }
 
 class _BottomTabsState extends State<BottomTabs> {
-  double money = 200.0;
-  double clickBonus = 1.0;
-  double passiveBonus = 0.0;
-
-  void changeMoney(double delta) {
-    setState(() => money += delta);
-  }
-
-  void applyUpgrade(double click, double passive) {
-    setState(() {
-      clickBonus += click;
-      passiveBonus += passive;
-    });
-  }
-
-  // --- Универсальная функция открытия модального окна ---
   void _openFullScreen(String title, Widget child) {
     showModalBottomSheet(
       context: context,
@@ -37,7 +30,7 @@ class _BottomTabsState extends State<BottomTabs> {
       barrierColor: Colors.black.withOpacity(0.6),
       builder: (_) {
         return FractionallySizedBox(
-          heightFactor: 1, // занимает весь экран
+          heightFactor: 1,
           child: Container(
             decoration: const BoxDecoration(
               color: Color(0xFF2B1A3A),
@@ -46,7 +39,6 @@ class _BottomTabsState extends State<BottomTabs> {
             child: Column(
               children: [
                 const SizedBox(height: 10),
-                // --- Индикатор свайпа вниз ---
                 Container(
                   width: 42,
                   height: 5,
@@ -56,8 +48,6 @@ class _BottomTabsState extends State<BottomTabs> {
                   ),
                 ),
                 const SizedBox(height: 10),
-
-                // --- Верхняя панель с крестиком ---
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
@@ -78,10 +68,7 @@ class _BottomTabsState extends State<BottomTabs> {
                     ],
                   ),
                 ),
-
                 const Divider(height: 1, color: Colors.white10),
-
-                // --- Контент с анимацией появления ---
                 Expanded(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
@@ -117,35 +104,22 @@ class _BottomTabsState extends State<BottomTabs> {
           color: Colors.white.withOpacity(0.03),
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Text(
-              'Баланс: ${money.toStringAsFixed(1)} ₽',
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _tabButton("Улучшения", Icons.upgrade, () {
-                  _openFullScreen(
-                    "Улучшения",
-                    UpgradesTab(
-                      money: money,
-                      onMoneyChange: changeMoney,
-                      onUpgrade: applyUpgrade,
-                    ),
-                  );
-                }),
-                _tabButton("Достижения", Icons.emoji_events_outlined, () {
-                  _openFullScreen("Достижения", const AchievementsTab());
-                }),
-              ],
-            ),
+            _tabButton("Улучшения", Icons.upgrade, () {
+              _openFullScreen(
+                "Улучшения",
+                UpgradesTab(
+                  money: widget.money,
+                  onMoneyChange: widget.onMoneyChange,
+                  onUpgrade: widget.onUpgrade,
+                ),
+              );
+            }),
+            _tabButton("Достижения", Icons.emoji_events_outlined, () {
+              _openFullScreen("Достижения", const AchievementsTab());
+            }),
           ],
         ),
       ),
