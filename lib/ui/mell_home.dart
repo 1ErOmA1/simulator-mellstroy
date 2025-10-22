@@ -20,7 +20,6 @@ class _MellHomeState extends State<MellHome> {
   double income = 0;
   int xp = 0;
   int level = 1;
-
   bool _showLevelCard = false;
   Timer? _timer;
 
@@ -49,11 +48,10 @@ class _MellHomeState extends State<MellHome> {
       views++;
       money += 1;
       xp += 1;
-
       if (xp >= 10 * level) {
         level++;
         xp = 0;
-        income += 2; // повышение дохода при уровне
+        income += 2;
       }
     });
   }
@@ -67,17 +65,21 @@ class _MellHomeState extends State<MellHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
+      resizeToAvoidBottomInset: false,
       body: Container(
-        decoration: const BoxDecoration(gradient: kAppGradient),
+        decoration: const BoxDecoration(
+          gradient: kAppGradient,
+        ),
         child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(18),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                 child: Column(
                   children: [
-                    // Верхняя карточка с аватаркой и статистикой
                     HeaderCard(
                       views: views,
                       subs: subs,
@@ -87,8 +89,6 @@ class _MellHomeState extends State<MellHome> {
                       level: level,
                       onAvatarTap: _toggleLevelCard,
                     ),
-
-                    // Анимация появления LevelCard под HeaderCard
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 400),
                       transitionBuilder: (child, animation) {
@@ -99,12 +99,10 @@ class _MellHomeState extends State<MellHome> {
                           parent: animation,
                           curve: Curves.easeOutCubic,
                         ));
-
                         final fadeAnimation = CurvedAnimation(
                           parent: animation,
                           curve: Curves.easeInOut,
                         );
-
                         return SlideTransition(
                           position: slideAnimation,
                           child: FadeTransition(
@@ -121,16 +119,15 @@ class _MellHomeState extends State<MellHome> {
                             )
                           : const SizedBox(key: ValueKey('empty')),
                     ),
-
-                    const SizedBox(height: 18),
-                    StreamImage(onTap: _onStreamTap),
-                    const SizedBox(height: 16),
-                    const BottomTabs(),
-                    const SizedBox(height: 22),
                   ],
                 ),
               ),
-            ),
+              StreamImage(onTap: _onStreamTap),
+              const Padding(
+                padding: EdgeInsets.all(18.0),
+                child: BottomTabs(),
+              ),
+            ],
           ),
         ),
       ),
