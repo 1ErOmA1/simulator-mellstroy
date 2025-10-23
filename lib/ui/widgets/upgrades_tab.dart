@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class UpgradesTab extends StatefulWidget {
-  final double money;
-  final Function(double) onMoneyChange;
+  final double silver; // 🪙 теперь используем серебро
+  final Function(double) onSilverChange;
   final Function(double, double) onUpgrade;
 
   const UpgradesTab({
     super.key,
-    required this.money,
-    required this.onMoneyChange,
+    required this.silver,
+    required this.onSilverChange,
     required this.onUpgrade,
   });
 
@@ -19,104 +19,41 @@ class UpgradesTab extends StatefulWidget {
 
 class _UpgradesTabState extends State<UpgradesTab> {
   List<Map<String, dynamic>> upgrades = [
-    {
-      'name': 'Камера',
-      'click': 0.05,
-      'passive': 0.025,
-      'price': 100.0,
-      'level': 0
-    },
-    {
-      'name': 'Подставка под камеру',
-      'click': 0.03,
-      'passive': 0.01,
-      'price': 50.0,
-      'level': 0
-    },
-    {
-      'name': 'Микрофон',
-      'click': 0.04,
-      'passive': 0.015,
-      'price': 80.0,
-      'level': 0
-    },
-    {
-      'name': 'Источник света',
-      'click': 0.06,
-      'passive': 0.02,
-      'price': 120.0,
-      'level': 0
-    },
-    {
-      'name': 'Одежда',
-      'click': 0.02,
-      'passive': 0.01,
-      'price': 40.0,
-      'level': 0
-    },
-    {
-      'name': 'Причёска и внешность',
-      'click': 0.03,
-      'passive': 0.015,
-      'price': 70.0,
-      'level': 0
-    },
-    {
-      'name': 'Часы',
-      'click': 0.01,
-      'passive': 0.005,
-      'price': 30.0,
-      'level': 0
-    },
-    {
-      'name': 'Харизма',
-      'click': 0.04,
-      'passive': 0.03,
-      'price': 150.0,
-      'level': 0
-    },
-    {
-      'name': 'Импровизация',
-      'click': 0.03,
-      'passive': 0.02,
-      'price': 130.0,
-      'level': 0
-    },
-    {
-      'name': 'Эрудиция',
-      'click': 0.02,
-      'passive': 0.02,
-      'price': 110.0,
-      'level': 0
-    },
-    {
-      'name': 'Остроумие',
-      'click': 0.04,
-      'passive': 0.02,
-      'price': 100.0,
-      'level': 0
-    },
-    {
-      'name': 'Эмоциональность',
-      'click': 0.05,
-      'passive': 0.03,
-      'price': 160.0,
-      'level': 0
-    },
+    {'name': 'Камера', 'click': 0.05, 'passive': 0.025, 'price': 100.0, 'level': 0},
+    {'name': 'Подставка под камеру', 'click': 0.03, 'passive': 0.01, 'price': 50.0, 'level': 0},
+    {'name': 'Микрофон', 'click': 0.04, 'passive': 0.015, 'price': 80.0, 'level': 0},
+    {'name': 'Источник света', 'click': 0.06, 'passive': 0.02, 'price': 120.0, 'level': 0},
+    {'name': 'Одежда', 'click': 0.02, 'passive': 0.01, 'price': 40.0, 'level': 0},
+    {'name': 'Причёска и внешность', 'click': 0.03, 'passive': 0.015, 'price': 70.0, 'level': 0},
+    {'name': 'Часы', 'click': 0.01, 'passive': 0.005, 'price': 30.0, 'level': 0},
+    {'name': 'Харизма', 'click': 0.04, 'passive': 0.03, 'price': 150.0, 'level': 0},
+    {'name': 'Импровизация', 'click': 0.03, 'passive': 0.02, 'price': 130.0, 'level': 0},
+    {'name': 'Эрудиция', 'click': 0.02, 'passive': 0.02, 'price': 110.0, 'level': 0},
+    {'name': 'Остроумие', 'click': 0.04, 'passive': 0.02, 'price': 100.0, 'level': 0},
+    {'name': 'Эмоциональность', 'click': 0.05, 'passive': 0.03, 'price': 160.0, 'level': 0},
   ];
 
   void buyUpgrade(int index) {
     var upgrade = upgrades[index];
     double price = upgrade['price'];
 
-    if (widget.money >= price) {
+    // 🪙 Проверяем серебро, а не золото
+    if (widget.silver >= price) {
       setState(() {
         upgrades[index]['level']++;
         upgrades[index]['price'] *= 1.35;
       });
 
-      widget.onMoneyChange(-price);
+      widget.onSilverChange(-price); // 💰 списываем серебро
       widget.onUpgrade(upgrade['click'], upgrade['passive']);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("❌ Недостаточно серебра!"),
+          backgroundColor: Colors.redAccent.shade200,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
@@ -129,7 +66,7 @@ class _UpgradesTabState extends State<UpgradesTab> {
         child: Column(
           children: upgrades.map((item) {
             final int index = upgrades.indexOf(item);
-            final bool canBuy = widget.money >= item['price'];
+            final bool canBuy = widget.silver >= item['price']; // 🪙 проверяем серебро
             final int level = item['level'];
 
             return Container(
@@ -156,7 +93,7 @@ class _UpgradesTabState extends State<UpgradesTab> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Цена: ${item['price'].toStringAsFixed(0)} ₽',
+                        'Цена: ${item['price'].toStringAsFixed(0)} серебра',
                         style: GoogleFonts.poppins(
                           color: Colors.white54,
                           fontSize: 12,
@@ -167,12 +104,11 @@ class _UpgradesTabState extends State<UpgradesTab> {
                   ElevatedButton(
                     onPressed: canBuy ? () => buyUpgrade(index) : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: canBuy
-                          ? const Color(0xFFFFC857)
-                          : Colors.grey.shade700,
+                      backgroundColor:
+                          canBuy ? const Color(0xFFFFC857) : Colors.grey.shade700,
                       foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
