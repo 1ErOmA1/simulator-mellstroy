@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'widgets/header_card.dart';
 import 'widgets/level_card.dart';
@@ -13,7 +14,7 @@ class MellHome extends StatefulWidget {
   State<MellHome> createState() => _MellHomeState();
 }
 
-class _MellHomeState extends State<MellHome> {
+class _MellHomeState extends State<MellHome> with SingleTickerProviderStateMixin {
   int views = 0;
   int subs = 0;
   double money = 0;
@@ -23,10 +24,23 @@ class _MellHomeState extends State<MellHome> {
   bool _showLevelCard = false;
   Timer? _timer;
 
+  late AnimationController _cardController;
+  late Animation<double> _scaleAnimation;
+
   @override
   void initState() {
     super.initState();
     _startIncomeTimer();
+
+    _cardController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+
+    _scaleAnimation = CurvedAnimation(
+      parent: _cardController,
+      curve: Curves.easeOutBack,
+    );
   }
 
   void _startIncomeTimer() {
@@ -40,29 +54,9 @@ class _MellHomeState extends State<MellHome> {
   @override
   void dispose() {
     _timer?.cancel();
+    _cardController.dispose();
     super.dispose();
   }
-
-  // void _onStreamTap() {
-  //   setState(() {
-  //     views += 1;
-  //     xp += 1;
-
-  //     int earnedSubs = views ~/ 100;
-  //     int earnedDollars = views ~/ 100;
-
-  //     if (earnedSubs > subs) {
-  //       subs = earnedSubs;
-  //       money += (earnedDollars - money.floor()).toDouble();
-  //     }
-
-  //     if (xp >= 10 * level) {
-  //       level++;
-  //       xp = 0;
-  //       income += 2;
-  //     }
-  //   });
-  // }
 
   void _onStreamTap() {
     setState(() {
@@ -84,32 +78,16 @@ class _MellHomeState extends State<MellHome> {
     });
   }
 
-  // void _onStreamTap() {
-  //   setState(() {
-  //     views += 1; // каждый клик = +1 просмотр
-  //     xp += 1; // XP остаётся как раньше
-
-  //     // каждые 100 просмотров = +1$
-  //     if (views % 100 == 0) {
-  //       money += 1;
-  //     }
-
-  //     // проверяем уровень
-  //     if (xp >= 10 * level) {
-  //       level++;
-  //       xp = 0;
-  //       income += 2; // повышение пассивного дохода
-  //     }
-  //   });
-  // }
-
-  void _toggleLevelCard() {
+  void _toggleLevelCard() async {
     setState(() {
       _showLevelCard = !_showLevelCard;
     });
+
+    if (_showLevelCard) {
+      _cardController.forward(from: 0);
+    }
   }
 
-  // --- передаём в BottomTabs ---
   void _changeMoney(double delta) {
     setState(() {
       money += delta;
@@ -119,7 +97,7 @@ class _MellHomeState extends State<MellHome> {
 
   void _applyUpgrade(double click, double passive) {
     setState(() {
-      income += passive; // добавляем пассивный доход
+      income += passive;
     });
   }
 
@@ -129,17 +107,19 @@ class _MellHomeState extends State<MellHome> {
       backgroundColor: Colors.black,
       resizeToAvoidBottomInset: false,
       body: Container(
-        decoration: const BoxDecoration(gradient: kAppGradient),
+        decoration: kAppBackground,
         child: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                child: Column(
-                  children: [
-                    HeaderCard(
+              // Основная структура
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                    child: HeaderCard(
                       views: views,
                       subs: subs,
                       money: money,
@@ -148,46 +128,54 @@ class _MellHomeState extends State<MellHome> {
                       level: level,
                       onAvatarTap: _toggleLevelCard,
                     ),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 400),
-                      transitionBuilder: (child, animation) {
-                        final slideAnimation = Tween<Offset>(
-                          begin: const Offset(0, -0.1),
-                          end: Offset.zero,
-                        ).animate(CurvedAnimation(
-                          parent: animation,
-                          curve: Curves.easeOutCubic,
-                        ));
-                        final fadeAnimation = CurvedAnimation(
-                          parent: animation,
-                          curve: Curves.easeInOut,
-                        );
-                        return SlideTransition(
-                          position: slideAnimation,
-                          child: FadeTransition(
-                              opacity: fadeAnimation, child: child),
-                        );
-                      },
-                      child: _showLevelCard
-                          ? Padding(
-                              key: const ValueKey('level'),
-                              padding: const EdgeInsets.only(top: 14),
-                              child: LevelCard(level: level, xp: xp),
-                            )
-                          : const SizedBox(key: ValueKey('empty')),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 360, bottom: 10),
+                    child: StreamImage(onTap: _onStreamTap),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(18.0),
+                    child: BottomTabs(
+                      money: money,
+                      onMoneyChange: _changeMoney,
+                      onUpgrade: _applyUpgrade,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              StreamImage(onTap: _onStreamTap),
-              Padding(
-                padding: const EdgeInsets.all(18.0),
-                child: BottomTabs(
-                  money: money,
-                  onMoneyChange: _changeMoney,
-                  onUpgrade: _applyUpgrade,
+
+              // Затемнение + popup LevelCard
+              if (_showLevelCard)
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: Stack(
+                    key: const ValueKey('overlay'),
+                    children: [
+                      // Размытие фона
+                      GestureDetector(
+                        onTap: _toggleLevelCard,
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 300),
+                          opacity: _showLevelCard ? 1 : 0,
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                            child: Container(
+                              color: Colors.black.withOpacity(0.5),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Popup карточка уровня
+                      Center(
+                        child: ScaleTransition(
+                          scale: _scaleAnimation,
+                          child: LevelCard(level: level, xp: xp),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
         ),
@@ -195,3 +183,4 @@ class _MellHomeState extends State<MellHome> {
     );
   }
 }
+

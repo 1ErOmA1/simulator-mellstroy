@@ -20,4 +20,8 @@ flutter:
   assets:
     - assets/images/streamer.png
     - assets/images/icon.png
+    - assets/images/background.png
+    - assets/images/coin.png
+    - assets/images/silver_coin.png
+    - assets/images/gold_coin.png
 

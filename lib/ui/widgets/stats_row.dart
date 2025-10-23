@@ -20,11 +20,33 @@ class StatsRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        StatBox(icon: Icons.remove_red_eye_outlined, value: '$views'),
-        StatBox(icon: Icons.group_outlined, value: '$subs'),
-        StatBox(icon: Icons.attach_money, value: '${money.toStringAsFixed(0)}'),
+        // 🪙 Серебряная монета вместо просмотров
         StatBox(
-            icon: Icons.trending_up, value: '${income.toStringAsFixed(0)}/с'),
+          imagePath: 'assets/images/silver_coin.png',
+          value: '$views',
+          label: 'Монеты',
+        ),
+
+        // 👥 Подписчики
+        StatBox(
+          icon: Icons.group_outlined,
+          value: '$subs',
+          label: 'Подписчики',
+        ),
+
+        // 💰 Золотая монета вместо денег
+        StatBox(
+          imagePath: 'assets/images/gold_coin.png',
+          value: '${money.toStringAsFixed(0)}',
+          label: 'Золото',
+        ),
+
+        // 📈 Доход
+        StatBox(
+          icon: Icons.trending_up,
+          value: '${income.toStringAsFixed(0)}',
+          label: 'в сек',
+        ),
       ],
     );
   }

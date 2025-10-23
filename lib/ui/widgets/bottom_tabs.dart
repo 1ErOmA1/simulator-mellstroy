@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'upgrades_tab.dart';
 import 'achievements_tab.dart';
+import 'shop_tab.dart';
+
 
 class BottomTabs extends StatefulWidget {
   final double money;
@@ -118,8 +120,30 @@ class _BottomTabsState extends State<BottomTabs> {
               );
             }),
             _tabButton("Достижения", Icons.emoji_events_outlined, () {
-              _openFullScreen("Достижения", const AchievementsTab());
+              _openFullScreen(
+  "Достижения",
+  AchievementsTab(
+    coins: widget.money.toInt(),
+    gold: 0, // если у тебя есть отдельная переменная для золота — подставь её
+    level: 1, // если у тебя где-то хранится уровень, тоже передай
+  ),
+);
             }),
+            _tabButton("Shop", Icons.shopping_cart_outlined, () {
+  _openFullScreen(
+    "Shop",
+    ShopTab(
+      onGoldChange: (gold) {
+        // Добавь сюда логику начисления золота
+        print("Получено $gold золота");
+      },
+      onIncomeMultiplier: (multiplier) {
+        // Измени множитель дохода в твоей логике
+        print("x$multiplier доход активен");
+      },
+    ),
+  );
+}),
           ],
         ),
       ),
