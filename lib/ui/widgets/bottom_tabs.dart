@@ -21,6 +21,79 @@ class BottomTabs extends StatefulWidget {
 }
 
 class _BottomTabsState extends State<BottomTabs> {
+  // void _openFullScreen(String title, Widget child) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     useSafeArea: true,
+  //     enableDrag: true,
+  //     backgroundColor: Colors.transparent,
+  //     barrierColor: Colors.black.withOpacity(0.6),
+  //     builder: (_) {
+  //       return FractionallySizedBox(
+  //         heightFactor: 1,
+  //         child: Container(
+  //           decoration: const BoxDecoration(
+  //             color: Color(0xFF2B1A3A),
+  //             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  //           ),
+  //           child: Column(
+  //             children: [
+  //               const SizedBox(height: 10),
+  //               Container(
+  //                 width: 42,
+  //                 height: 5,
+  //                 decoration: BoxDecoration(
+  //                   color: Colors.white24,
+  //                   borderRadius: BorderRadius.circular(12),
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 10),
+  //               Padding(
+  //                 padding: const EdgeInsets.symmetric(horizontal: 16),
+  //                 child: Row(
+  //                   children: [
+  //                     Text(
+  //                       title,
+  //                       style: GoogleFonts.poppins(
+  //                         color: Colors.white,
+  //                         fontWeight: FontWeight.w600,
+  //                         fontSize: 18,
+  //                       ),
+  //                     ),
+  //                     const Spacer(),
+  //                     IconButton(
+  //                       onPressed: () => Navigator.pop(context),
+  //                       icon: const Icon(Icons.close, color: Colors.white70),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //               const Divider(height: 1, color: Colors.white10),
+  //               Expanded(
+  //                 child: AnimatedSwitcher(
+  //                   duration: const Duration(milliseconds: 300),
+  //                   transitionBuilder: (child, anim) => FadeTransition(
+  //                     opacity: anim,
+  //                     child: SlideTransition(
+  //                       position: Tween<Offset>(
+  //                         begin: const Offset(0, 0.05),
+  //                         end: Offset.zero,
+  //                       ).animate(anim),
+  //                       child: child,
+  //                     ),
+  //                   ),
+  //                   child: child,
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
+
   void _openFullScreen(String title, Widget child) {
     showModalBottomSheet(
       context: context,
@@ -31,7 +104,7 @@ class _BottomTabsState extends State<BottomTabs> {
       barrierColor: Colors.black.withOpacity(0.6),
       builder: (_) {
         return FractionallySizedBox(
-          heightFactor: 1,
+          heightFactor: 0.92, // 👈 ограничиваем высоту, не на весь экран
           child: Container(
             decoration: const BoxDecoration(
               color: Color(0xFF2B1A3A),
@@ -71,19 +144,16 @@ class _BottomTabsState extends State<BottomTabs> {
                 ),
                 const Divider(height: 1, color: Colors.white10),
                 Expanded(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    transitionBuilder: (child, anim) => FadeTransition(
-                      opacity: anim,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0, 0.05),
-                          end: Offset.zero,
-                        ).animate(anim),
+                  child: ClipRRect(
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(20)),
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 40),
                         child: child,
                       ),
                     ),
-                    child: child,
                   ),
                 ),
               ],

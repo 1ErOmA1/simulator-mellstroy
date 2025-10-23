@@ -16,7 +16,7 @@ class _StreamImageState extends State<StreamImage> {
   void _spawnCoin() {
     final id = UniqueKey();
     final random = Random();
-    final dx = random.nextDouble() * 100 - 50; // небольшое случайное смещение
+    final dx = random.nextDouble() * 100 - 50;
     final coin = _CoinAnimation(id: id, offsetX: dx);
 
     setState(() => _coins.add(coin));
@@ -33,38 +33,47 @@ class _StreamImageState extends State<StreamImage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // Пропорциональная высота (примерно 45% экрана, но не меньше 300)
+    final imageHeight = max(300, screenHeight * 0.45).toDouble();
+
     return GestureDetector(
       onTap: _onTap,
-      child: Container(
-        height: 420,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          color: Colors.white.withOpacity(0.04),
-          border: Border.all(color: Colors.white.withOpacity(0.08)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.25),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(18),
-          child: Stack(
-            alignment: Alignment.center,
-            clipBehavior: Clip.none,
-            children: [
-              SizedBox(
-                width: double.infinity,
-                height: double.infinity,
-                child: Image.asset(
-                  'assets/images/streamer.png',
-                  fit: BoxFit.cover,
-                ),
+      child: Center(
+        child: Container(
+          margin: const EdgeInsets.only(top: 40),
+          width: screenWidth * 0.9, // немного отступов по бокам
+          height: imageHeight,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            color: Colors.white.withOpacity(0.04),
+            border: Border.all(color: Colors.white.withOpacity(0.08)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.25),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
-              ..._coins.map((coin) => coin),
             ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
+              children: [
+                Positioned.fill(
+                  child: Image.asset(
+                    'assets/images/streamer.png',
+                    fit: BoxFit.contain,
+                    alignment: Alignment.bottomCenter,
+                  ),
+                ),
+                ..._coins.map((coin) => coin),
+              ],
+            ),
           ),
         ),
       ),
@@ -94,7 +103,9 @@ class _CoinAnimationState extends State<_CoinAnimation>
   void initState() {
     super.initState();
     _controller = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 800));
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
 
     _moveUp = Tween<double>(begin: 0, end: -120).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutQuad),
@@ -117,18 +128,19 @@ class _CoinAnimationState extends State<_CoinAnimation>
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     return AnimatedBuilder(
       animation: _controller,
       builder: (_, __) {
         return Positioned(
           bottom: 20 - _moveUp.value,
-          left: MediaQuery.of(context).size.width / 2 + widget.offsetX,
+          left: screenWidth / 2 + widget.offsetX,
           child: Opacity(
             opacity: _fadeOut.value,
             child: Transform.rotate(
               angle: _rotate.value,
               child: Image.asset(
-                'assets/images/silver_coin.png', //
+                'assets/images/silver_coin.png',
                 width: 30,
                 height: 30,
               ),

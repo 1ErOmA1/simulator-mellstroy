@@ -16,41 +16,115 @@ class ShopTab extends StatefulWidget {
 }
 
 class _ShopTabState extends State<ShopTab> {
-  // bool _isDoubleActive = false;
-  // DateTime? _boostEnd;
-
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.lock_outline_rounded,
-            color: Colors.white.withOpacity(0.8),
-            size: 60,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            "🛒 Магазин скоро откроется!",
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 18,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight,
+            ),
+            child: IntrinsicHeight(
+              child: Center(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.lock_outline_rounded,
+                        color: Colors.white.withOpacity(0.8),
+                        size: 60,
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        "🛒 Магазин скоро откроется!",
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        "Подожди до первого обновления 🎉",
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 10),
-          Text(
-            "Подожди до первого обновления 🎉",
-            style: GoogleFonts.poppins(
-              color: Colors.white70,
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
+}
+
+
+
+// import 'package:flutter/material.dart';
+// import 'package:google_fonts/google_fonts.dart';
+
+// class ShopTab extends StatefulWidget {
+//   final Function(double) onGoldChange;
+//   final Function(double) onIncomeMultiplier;
+
+//   const ShopTab({
+//     super.key,
+//     required this.onGoldChange,
+//     required this.onIncomeMultiplier,
+//   });
+
+//   @override
+//   State<ShopTab> createState() => _ShopTabState();
+// }
+
+// class _ShopTabState extends State<ShopTab> {
+//   // bool _isDoubleActive = false;
+//   // DateTime? _boostEnd;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Center(
+//       child: Column(
+//         mainAxisAlignment: MainAxisAlignment.center,
+//         children: [
+//           Icon(
+//             Icons.lock_outline_rounded,
+//             color: Colors.white.withOpacity(0.8),
+//             size: 60,
+//           ),
+//           const SizedBox(height: 20),
+//           Text(
+//             "🛒 Магазин скоро откроется!",
+//             style: GoogleFonts.poppins(
+//               color: Colors.white,
+//               fontWeight: FontWeight.w600,
+//               fontSize: 18,
+//             ),
+//           ),
+//           const SizedBox(height: 10),
+//           Text(
+//             "Подожди до первого обновления 🎉",
+//             style: GoogleFonts.poppins(
+//               color: Colors.white70,
+//               fontSize: 14,
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
 
   // -------------------------------
   // 🔒 ВРЕМЕННО ОТКЛЮЧЕННЫЙ КОД:
@@ -150,4 +224,4 @@ class _ShopTabState extends State<ShopTab> {
     );
   }
   */
-}
+//}
