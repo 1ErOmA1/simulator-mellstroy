@@ -14,7 +14,8 @@ class MellHome extends StatefulWidget {
   State<MellHome> createState() => _MellHomeState();
 }
 
-class _MellHomeState extends State<MellHome> with SingleTickerProviderStateMixin {
+class _MellHomeState extends State<MellHome>
+    with SingleTickerProviderStateMixin {
   int views = 0;
   int subs = 0;
   double money = 0;
@@ -117,8 +118,8 @@ class _MellHomeState extends State<MellHome> with SingleTickerProviderStateMixin
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 10),
                     child: HeaderCard(
                       views: views,
                       subs: subs,
@@ -130,7 +131,7 @@ class _MellHomeState extends State<MellHome> with SingleTickerProviderStateMixin
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(top: 360, bottom: 10),
+                    padding: const EdgeInsets.only(top: 160, bottom: 10),
                     child: StreamImage(onTap: _onStreamTap),
                   ),
                   Padding(
@@ -183,4 +184,3 @@ class _MellHomeState extends State<MellHome> with SingleTickerProviderStateMixin
     );
   }
 }
-

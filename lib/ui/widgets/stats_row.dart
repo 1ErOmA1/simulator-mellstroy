@@ -31,7 +31,7 @@ class StatsRow extends StatelessWidget {
         StatBox(
           icon: Icons.group_outlined,
           value: '$subs',
-          label: 'Подписчики',
+          label: 'Боровы',
         ),
 
         // 💰 Золотая монета вместо денег
