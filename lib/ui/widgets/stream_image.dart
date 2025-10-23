@@ -36,7 +36,7 @@ class _StreamImageState extends State<StreamImage> {
     return GestureDetector(
       onTap: _onTap,
       child: Container(
-        height: 220,
+        height: 420,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           color: Colors.white.withOpacity(0.04),
@@ -55,12 +55,14 @@ class _StreamImageState extends State<StreamImage> {
             alignment: Alignment.center,
             clipBehavior: Clip.none,
             children: [
-              Image.asset(
-                'assets/images/streamer.png',
-                fit: BoxFit.cover,
+              SizedBox(
+                width: double.infinity,
+                height: double.infinity,
+                child: Image.asset(
+                  'assets/images/streamer.png',
+                  fit: BoxFit.cover,
+                ),
               ),
-
-              // Монетки 💰
               ..._coins.map((coin) => coin),
             ],
           ),
@@ -74,13 +76,15 @@ class _CoinAnimation extends StatefulWidget {
   final Key id;
   final double offsetX;
 
-  const _CoinAnimation({required this.id, required this.offsetX}) : super(key: id);
+  const _CoinAnimation({required this.id, required this.offsetX})
+      : super(key: id);
 
   @override
   State<_CoinAnimation> createState() => _CoinAnimationState();
 }
 
-class _CoinAnimationState extends State<_CoinAnimation> with SingleTickerProviderStateMixin {
+class _CoinAnimationState extends State<_CoinAnimation>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _moveUp;
   late Animation<double> _fadeOut;
@@ -89,7 +93,8 @@ class _CoinAnimationState extends State<_CoinAnimation> with SingleTickerProvide
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 800));
 
     _moveUp = Tween<double>(begin: 0, end: -120).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutQuad),
@@ -123,7 +128,7 @@ class _CoinAnimationState extends State<_CoinAnimation> with SingleTickerProvide
             child: Transform.rotate(
               angle: _rotate.value,
               child: Image.asset(
-                'assets/images/coin.png', // 
+                'assets/images/silver_coin.png', //
                 width: 30,
                 height: 30,
               ),
