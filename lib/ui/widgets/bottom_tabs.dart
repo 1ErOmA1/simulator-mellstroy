@@ -4,16 +4,15 @@ import 'upgrades_tab.dart';
 import 'achievements_tab.dart';
 import 'shop_tab.dart';
 
-
 class BottomTabs extends StatefulWidget {
-  final double money;
-  final Function(double) onMoneyChange;
+  final double silver; // 🪙 теперь используем серебро
+  final Function(double) onSilverChange; // ⚙️ изменение серебра
   final Function(double, double) onUpgrade;
 
   const BottomTabs({
     super.key,
-    required this.money,
-    required this.onMoneyChange,
+    required this.silver,
+    required this.onSilverChange,
     required this.onUpgrade,
   });
 
@@ -113,37 +112,35 @@ class _BottomTabsState extends State<BottomTabs> {
               _openFullScreen(
                 "Улучшения",
                 UpgradesTab(
-                  money: widget.money,
-                  onMoneyChange: widget.onMoneyChange,
+                  silver: widget.silver, // 🪙 передаём серебро
+                  onSilverChange: widget.onSilverChange, // 🔁 обработчик
                   onUpgrade: widget.onUpgrade,
                 ),
               );
             }),
             _tabButton("Достижения", Icons.emoji_events_outlined, () {
               _openFullScreen(
-  "Достижения",
-  AchievementsTab(
-    coins: widget.money.toInt(),
-    gold: 0, // если у тебя есть отдельная переменная для золота — подставь её
-    level: 1, // если у тебя где-то хранится уровень, тоже передай
-  ),
-);
+                "Достижения",
+                AchievementsTab(
+                  coins: widget.silver.toInt(),
+                  gold: 0,
+                  level: 1,
+                ),
+              );
             }),
             _tabButton("Shop", Icons.shopping_cart_outlined, () {
-  _openFullScreen(
-    "Shop",
-    ShopTab(
-      onGoldChange: (gold) {
-        // Добавь сюда логику начисления золота
-        print("Получено $gold золота");
-      },
-      onIncomeMultiplier: (multiplier) {
-        // Измени множитель дохода в твоей логике
-        print("x$multiplier доход активен");
-      },
-    ),
-  );
-}),
+              _openFullScreen(
+                "Shop",
+                ShopTab(
+                  onGoldChange: (gold) {
+                    print("Получено $gold золота");
+                  },
+                  onIncomeMultiplier: (multiplier) {
+                    print("x$multiplier доход активен");
+                  },
+                ),
+              );
+            }),
           ],
         ),
       ),

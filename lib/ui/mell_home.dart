@@ -18,7 +18,7 @@ class _MellHomeState extends State<MellHome>
     with SingleTickerProviderStateMixin {
   int views = 0;
   int subs = 0;
-  double money = 0;
+  double silver = 0; // 💰 серебро
   double income = 0;
   int xp = 0;
   int level = 1;
@@ -47,7 +47,7 @@ class _MellHomeState extends State<MellHome>
   void _startIncomeTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
-        money += income;
+        silver += income;
       });
     });
   }
@@ -59,22 +59,28 @@ class _MellHomeState extends State<MellHome>
     super.dispose();
   }
 
+  // 👇 исправляем систему XP и уровня
   void _onStreamTap() {
     setState(() {
       views += 1;
-      xp += 1;
+      xp += 1; // 1 XP за клик
 
       int earnedSubs = views ~/ 100;
-      int earnedDollars = views ~/ 100;
+      int earnedSilver = views ~/ 100;
 
       if (earnedSubs > subs) {
         subs = earnedSubs;
-        money += (earnedDollars - money.floor()).toDouble();
+        silver += (earnedSilver - silver.floor()).toDouble();
       }
 
-      if (xp >= 10 * level) {
+      // 🎯 Новый расчёт уровня — нужно 100 XP на каждый уровень
+      int xpToNextLevel = 100 * level;
+      if (xp >= xpToNextLevel) {
+        xp -= xpToNextLevel; // сохраняем остаток XP (если игрок накопил больше)
         level++;
-        xp = 0;
+
+        // 🔥 можно добавить визуальный эффект повышения уровня
+        _cardController.forward(from: 0);
       }
     });
   }
@@ -89,13 +95,15 @@ class _MellHomeState extends State<MellHome>
     }
   }
 
-  void _changeMoney(double delta) {
+  // 💰 изменение серебра
+  void _changeSilver(double delta) {
     setState(() {
-      money += delta;
-      if (money < 0) money = 0;
+      silver += delta;
+      if (silver < 0) silver = 0;
     });
   }
 
+  // 💡 улучшение — даёт пассивный доход
   void _applyUpgrade(double click, double passive) {
     setState(() {
       income += passive;
@@ -123,7 +131,7 @@ class _MellHomeState extends State<MellHome>
                     child: HeaderCard(
                       views: views,
                       subs: subs,
-                      money: money,
+                      money: silver,
                       income: income,
                       xp: xp,
                       level: level,
@@ -137,8 +145,8 @@ class _MellHomeState extends State<MellHome>
                   Padding(
                     padding: const EdgeInsets.all(18.0),
                     child: BottomTabs(
-                      money: money,
-                      onMoneyChange: _changeMoney,
+                      silver: silver,
+                      onSilverChange: _changeSilver,
                       onUpgrade: _applyUpgrade,
                     ),
                   ),
@@ -152,7 +160,6 @@ class _MellHomeState extends State<MellHome>
                   child: Stack(
                     key: const ValueKey('overlay'),
                     children: [
-                      // Размытие фона
                       GestureDetector(
                         onTap: _toggleLevelCard,
                         child: AnimatedOpacity(
@@ -166,8 +173,6 @@ class _MellHomeState extends State<MellHome>
                           ),
                         ),
                       ),
-
-                      // Popup карточка уровня
                       Center(
                         child: ScaleTransition(
                           scale: _scaleAnimation,
