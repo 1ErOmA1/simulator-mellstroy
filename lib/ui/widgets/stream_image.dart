@@ -13,22 +13,17 @@ class StreamImage extends StatefulWidget {
 class _StreamImageState extends State<StreamImage> {
   final List<_CoinAnimation> _coins = [];
 
-  void _spawnCoin() {
+  void _spawnCoin(Offset position) {
     final id = UniqueKey();
-    final random = Random();
-    final dx = random.nextDouble() * 100 - 50;
-    final coin = _CoinAnimation(id: id, offsetX: dx);
+    final coin = _CoinAnimation(id: id, position: position);
 
     setState(() => _coins.add(coin));
 
     Future.delayed(const Duration(milliseconds: 800), () {
-      setState(() => _coins.removeWhere((c) => c.id == id));
+      if (mounted) {
+        setState(() => _coins.removeWhere((c) => c.id == id));
+      }
     });
-  }
-
-  void _onTap() {
-    widget.onTap();
-    _spawnCoin();
   }
 
   @override
@@ -36,45 +31,32 @@ class _StreamImageState extends State<StreamImage> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Пропорциональная высота (примерно 45% экрана, но не меньше 300)
     final imageHeight = max(300, screenHeight * 0.45).toDouble();
 
-    return GestureDetector(
-      onTap: _onTap,
-      child: Center(
-        child: Container(
-          margin: const EdgeInsets.only(top: 40),
-          width: screenWidth * 0.9, // немного отступов по бокам
-          height: imageHeight,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            color: Colors.white.withOpacity(0.04),
-            border: Border.all(color: Colors.white.withOpacity(0.08)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.25),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(18),
-            child: Stack(
-              alignment: Alignment.center,
-              clipBehavior: Clip.none,
-              children: [
-                Positioned.fill(
-                  child: Image.asset(
-                    'assets/images/streamer.png',
-                    fit: BoxFit.contain,
-                    alignment: Alignment.bottomCenter,
-                  ),
+    return SizedBox(
+      width: screenWidth * 0.8,
+      height: imageHeight + 240,
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTapDown: (details) {
+          widget.onTap();
+          _spawnCoin(details.localPosition);
+        },
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(18),
+                child: Image.asset(
+                  'assets/images/streamer.png',
+                  fit: BoxFit.contain,
+                  alignment: Alignment.bottomCenter,
                 ),
-                ..._coins.map((coin) => coin),
-              ],
+              ),
             ),
-          ),
+            ..._coins.map((coin) => coin),
+          ],
         ),
       ),
     );
@@ -83,9 +65,9 @@ class _StreamImageState extends State<StreamImage> {
 
 class _CoinAnimation extends StatefulWidget {
   final Key id;
-  final double offsetX;
+  final Offset position;
 
-  const _CoinAnimation({required this.id, required this.offsetX})
+  const _CoinAnimation({required this.id, required this.position})
       : super(key: id);
 
   @override
@@ -128,13 +110,12 @@ class _CoinAnimationState extends State<_CoinAnimation>
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
     return AnimatedBuilder(
       animation: _controller,
       builder: (_, __) {
         return Positioned(
-          bottom: 20 - _moveUp.value,
-          left: screenWidth / 2 + widget.offsetX,
+          left: widget.position.dx - 15,
+          top: widget.position.dy - 15 + _moveUp.value,
           child: Opacity(
             opacity: _fadeOut.value,
             child: Transform.rotate(

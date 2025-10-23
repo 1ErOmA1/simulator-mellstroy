@@ -16,12 +16,16 @@ class MellHome extends StatefulWidget {
 
 class _MellHomeState extends State<MellHome>
     with SingleTickerProviderStateMixin {
-  int views = 0;
+  double views = 0; // 🪙 серебро
+  double silver = 0; // 💰 золото (в будущем)
   int subs = 0;
-  double silver = 0; // 💰 серебро
-  double income = 0;
+
+  double income = 0; // пассивный доход в серебре
+  double clickIncome = 1; // доход за клик
+
   int xp = 0;
   int level = 1;
+
   bool _showLevelCard = false;
   Timer? _timer;
 
@@ -47,7 +51,7 @@ class _MellHomeState extends State<MellHome>
   void _startIncomeTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
-        silver += income;
+        views += income;
       });
     });
   }
@@ -59,69 +63,62 @@ class _MellHomeState extends State<MellHome>
     super.dispose();
   }
 
-  // 👇 исправляем систему XP и уровня
   void _onStreamTap() {
     setState(() {
-      views += 1;
-      xp += 1; // 1 XP за клик
+      views += clickIncome;
+      xp += 1;
 
-      int earnedSubs = views ~/ 100;
-      int earnedSilver = views ~/ 100;
-
-      if (earnedSubs > subs) {
-        subs = earnedSubs;
-        silver += (earnedSilver - silver.floor()).toDouble();
+      if (views % 100 == 0) {
+        subs += 1;
+        silver += 1;
       }
 
-      // 🎯 Новый расчёт уровня — нужно 100 XP на каждый уровень
+      int earnedSubs = (views ~/ 100).toInt();
+      if (earnedSubs > subs) subs = earnedSubs;
+
       int xpToNextLevel = 100 * level;
       if (xp >= xpToNextLevel) {
-        xp -= xpToNextLevel; // сохраняем остаток XP (если игрок накопил больше)
+        xp -= xpToNextLevel;
         level++;
-
-        // 🔥 можно добавить визуальный эффект повышения уровня
         _cardController.forward(from: 0);
       }
     });
   }
 
-  void _toggleLevelCard() async {
+  void _toggleLevelCard() {
     setState(() {
       _showLevelCard = !_showLevelCard;
     });
-
-    if (_showLevelCard) {
-      _cardController.forward(from: 0);
-    }
+    if (_showLevelCard) _cardController.forward(from: 0);
   }
 
-  // 💰 изменение серебра
-  void _changeSilver(double delta) {
+  void _changeViews(double delta) {
     setState(() {
-      silver += delta;
-      if (silver < 0) silver = 0;
+      views += delta;
+      if (views < 0) views = 0;
     });
   }
 
-  // 💡 улучшение — даёт пассивный доход
   void _applyUpgrade(double click, double passive) {
     setState(() {
+      clickIncome += click;
       income += passive;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.black,
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       body: Container(
         decoration: kAppBackground,
         child: SafeArea(
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Основная структура
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -139,21 +136,23 @@ class _MellHomeState extends State<MellHome>
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(top: 160, bottom: 10),
-                    child: StreamImage(onTap: _onStreamTap),
-                  ),
-                  Padding(
                     padding: const EdgeInsets.all(18.0),
                     child: BottomTabs(
-                      silver: silver,
-                      onSilverChange: _changeSilver,
+                      silver: views,
+                      onSilverChange: _changeViews,
                       onUpgrade: _applyUpgrade,
                     ),
                   ),
                 ],
               ),
-
-              // Затемнение + popup LevelCard
+              Positioned(
+                bottom: screenHeight * 0.06,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: StreamImage(onTap: _onStreamTap),
+                ),
+              ),
               if (_showLevelCard)
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
