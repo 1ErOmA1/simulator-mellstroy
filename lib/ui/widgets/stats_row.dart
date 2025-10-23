@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'stat_box.dart';
 
 class StatsRow extends StatelessWidget {
-  final int views;
+  final double views;
   final int subs;
   final double money;
   final double income;
@@ -20,31 +20,24 @@ class StatsRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // 🪙 Серебряная монета вместо просмотров
         StatBox(
           imagePath: 'assets/images/silver_coin.png',
-          value: '$views',
-          label: 'Монеты',
+          value: views.toStringAsFixed(0),
+          label: 'Серебро',
         ),
-
-        // 👥 Подписчики
         StatBox(
           icon: Icons.group_outlined,
-          value: '$subs',
-          label: 'Подписчики',
+          value: subs.toStringAsFixed(0),
+          label: 'Боровы',
         ),
-
-        // 💰 Золотая монета вместо денег
         StatBox(
           imagePath: 'assets/images/gold_coin.png',
-          value: '${money.toStringAsFixed(0)}',
+          value: money.toStringAsFixed(0),
           label: 'Золото',
         ),
-
-        // 📈 Доход
         StatBox(
           icon: Icons.trending_up,
-          value: '${income.toStringAsFixed(0)}',
+          value: income.toStringAsFixed(0),
           label: 'в сек',
         ),
       ],

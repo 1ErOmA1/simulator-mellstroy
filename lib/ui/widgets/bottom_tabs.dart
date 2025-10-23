@@ -4,16 +4,15 @@ import 'upgrades_tab.dart';
 import 'achievements_tab.dart';
 import 'shop_tab.dart';
 
-
 class BottomTabs extends StatefulWidget {
-  final double money;
-  final Function(double) onMoneyChange;
+  final double silver;
+  final Function(double) onSilverChange;
   final Function(double, double) onUpgrade;
 
   const BottomTabs({
     super.key,
-    required this.money,
-    required this.onMoneyChange,
+    required this.silver,
+    required this.onSilverChange,
     required this.onUpgrade,
   });
 
@@ -32,7 +31,7 @@ class _BottomTabsState extends State<BottomTabs> {
       barrierColor: Colors.black.withOpacity(0.6),
       builder: (_) {
         return FractionallySizedBox(
-          heightFactor: 1,
+          heightFactor: 0.92,
           child: Container(
             decoration: const BoxDecoration(
               color: Color(0xFF2B1A3A),
@@ -71,22 +70,7 @@ class _BottomTabsState extends State<BottomTabs> {
                   ),
                 ),
                 const Divider(height: 1, color: Colors.white10),
-                Expanded(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    transitionBuilder: (child, anim) => FadeTransition(
-                      opacity: anim,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0, 0.05),
-                          end: Offset.zero,
-                        ).animate(anim),
-                        child: child,
-                      ),
-                    ),
-                    child: child,
-                  ),
-                ),
+                Expanded(child: child),
               ],
             ),
           ),
@@ -97,6 +81,9 @@ class _BottomTabsState extends State<BottomTabs> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bool showIcons = screenWidth > 456;
+
     return SafeArea(
       top: false,
       bottom: true,
@@ -107,67 +94,84 @@ class _BottomTabsState extends State<BottomTabs> {
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _tabButton("Улучшения", Icons.upgrade, () {
-              _openFullScreen(
-                "Улучшения",
-                UpgradesTab(
-                  money: widget.money,
-                  onMoneyChange: widget.onMoneyChange,
-                  onUpgrade: widget.onUpgrade,
-                ),
-              );
-            }),
-            _tabButton("Достижения", Icons.emoji_events_outlined, () {
-              _openFullScreen(
-  "Достижения",
-  AchievementsTab(
-    coins: widget.money.toInt(),
-    gold: 0, // если у тебя есть отдельная переменная для золота — подставь её
-    level: 1, // если у тебя где-то хранится уровень, тоже передай
-  ),
-);
-            }),
-            _tabButton("Shop", Icons.shopping_cart_outlined, () {
-  _openFullScreen(
-    "Shop",
-    ShopTab(
-      onGoldChange: (gold) {
-        // Добавь сюда логику начисления золота
-        print("Получено $gold золота");
-      },
-      onIncomeMultiplier: (multiplier) {
-        // Измени множитель дохода в твоей логике
-        print("x$multiplier доход активен");
-      },
-    ),
-  );
-}),
+            Expanded(
+              child: _tabButton("Улучшения", Icons.upgrade, showIcons, () {
+                _openFullScreen(
+                  "Улучшения",
+                  UpgradesTab(
+                    views: widget.silver,
+                    onViewsChange: widget.onSilverChange,
+                    onUpgrade: widget.onUpgrade,
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _tabButton(
+                  "Достижения", Icons.emoji_events_outlined, showIcons, () {
+                _openFullScreen(
+                  "Достижения",
+                  AchievementsTab(
+                    coins: widget.silver.toInt(),
+                    gold: 0,
+                    level: 1,
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _tabButton(
+                  "Магазин", Icons.shopping_cart_outlined, showIcons, () {
+                _openFullScreen(
+                  "Магазин",
+                  ShopTab(
+                    onGoldChange: (gold) {
+                      print("Получено $gold золота");
+                    },
+                    onIncomeMultiplier: (multiplier) {
+                      print("x$multiplier доход активен");
+                    },
+                  ),
+                );
+              }),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _tabButton(String text, IconData icon, VoidCallback onTap) {
+  Widget _tabButton(
+      String text, IconData icon, bool showIcon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 14),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.08),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: Colors.white, size: 18),
-            const SizedBox(width: 6),
-            Text(
-              text,
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
+            if (showIcon) ...[
+              Icon(icon, color: Colors.white, size: 18),
+              const SizedBox(width: 6),
+            ],
+            Flexible(
+              child: Text(
+                text,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
               ),
             ),
           ],

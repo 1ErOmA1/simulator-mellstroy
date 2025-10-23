@@ -14,13 +14,18 @@ class MellHome extends StatefulWidget {
   State<MellHome> createState() => _MellHomeState();
 }
 
-class _MellHomeState extends State<MellHome> with SingleTickerProviderStateMixin {
-  int views = 0;
+class _MellHomeState extends State<MellHome>
+    with SingleTickerProviderStateMixin {
+  double views = 0; // 🪙 серебро
+  double silver = 0; // 💰 золото (в будущем)
   int subs = 0;
-  double money = 0;
-  double income = 0;
+
+  double income = 0; // пассивный доход в серебре
+  double clickIncome = 1; // доход за клик
+
   int xp = 0;
   int level = 1;
+
   bool _showLevelCard = false;
   Timer? _timer;
 
@@ -46,7 +51,7 @@ class _MellHomeState extends State<MellHome> with SingleTickerProviderStateMixin
   void _startIncomeTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
-        money += income;
+        views += income;
       });
     });
   }
@@ -60,69 +65,70 @@ class _MellHomeState extends State<MellHome> with SingleTickerProviderStateMixin
 
   void _onStreamTap() {
     setState(() {
-      views += 1;
+      views += clickIncome;
       xp += 1;
 
-      int earnedSubs = views ~/ 100;
-      int earnedDollars = views ~/ 100;
-
-      if (earnedSubs > subs) {
-        subs = earnedSubs;
-        money += (earnedDollars - money.floor()).toDouble();
+      if (views % 100 == 0) {
+        subs += 1;
+        silver += 1;
       }
 
-      if (xp >= 10 * level) {
+      int earnedSubs = (views ~/ 100).toInt();
+      if (earnedSubs > subs) subs = earnedSubs;
+
+      int xpToNextLevel = 100 * level;
+      if (xp >= xpToNextLevel) {
+        xp -= xpToNextLevel;
         level++;
-        xp = 0;
+        _cardController.forward(from: 0);
       }
     });
   }
 
-  void _toggleLevelCard() async {
+  void _toggleLevelCard() {
     setState(() {
       _showLevelCard = !_showLevelCard;
     });
-
-    if (_showLevelCard) {
-      _cardController.forward(from: 0);
-    }
+    if (_showLevelCard) _cardController.forward(from: 0);
   }
 
-  void _changeMoney(double delta) {
+  void _changeViews(double delta) {
     setState(() {
-      money += delta;
-      if (money < 0) money = 0;
+      views += delta;
+      if (views < 0) views = 0;
     });
   }
 
   void _applyUpgrade(double click, double passive) {
     setState(() {
+      clickIncome += click;
       income += passive;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.black,
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       body: Container(
         decoration: kAppBackground,
         child: SafeArea(
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Основная структура
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 10),
                     child: HeaderCard(
                       views: views,
                       subs: subs,
-                      money: money,
+                      money: silver,
                       income: income,
                       xp: xp,
                       level: level,
@@ -130,28 +136,29 @@ class _MellHomeState extends State<MellHome> with SingleTickerProviderStateMixin
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(top: 360, bottom: 10),
-                    child: StreamImage(onTap: _onStreamTap),
-                  ),
-                  Padding(
                     padding: const EdgeInsets.all(18.0),
                     child: BottomTabs(
-                      money: money,
-                      onMoneyChange: _changeMoney,
+                      silver: views,
+                      onSilverChange: _changeViews,
                       onUpgrade: _applyUpgrade,
                     ),
                   ),
                 ],
               ),
-
-              // Затемнение + popup LevelCard
+              Positioned(
+                bottom: screenHeight * 0.06,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: StreamImage(onTap: _onStreamTap),
+                ),
+              ),
               if (_showLevelCard)
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
                   child: Stack(
                     key: const ValueKey('overlay'),
                     children: [
-                      // Размытие фона
                       GestureDetector(
                         onTap: _toggleLevelCard,
                         child: AnimatedOpacity(
@@ -165,8 +172,6 @@ class _MellHomeState extends State<MellHome> with SingleTickerProviderStateMixin
                           ),
                         ),
                       ),
-
-                      // Popup карточка уровня
                       Center(
                         child: ScaleTransition(
                           scale: _scaleAnimation,
@@ -183,4 +188,3 @@ class _MellHomeState extends State<MellHome> with SingleTickerProviderStateMixin
     );
   }
 }
-

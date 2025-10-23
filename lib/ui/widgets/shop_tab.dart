@@ -16,55 +16,48 @@ class ShopTab extends StatefulWidget {
 }
 
 class _ShopTabState extends State<ShopTab> {
-  bool _isDoubleActive = false;
-  DateTime? _boostEnd;
+  // bool _isDoubleActive = false;
+  // DateTime? _boostEnd;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
+    return Center(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          Icon(
+            Icons.lock_outline_rounded,
+            color: Colors.white.withOpacity(0.8),
+            size: 60,
+          ),
+          const SizedBox(height: 20),
           Text(
-            "🛍 Магазин бустов",
+            "🛒 Магазин скоро откроется!",
             style: GoogleFonts.poppins(
               color: Colors.white,
               fontWeight: FontWeight.w600,
               fontSize: 18,
             ),
           ),
-          const SizedBox(height: 18),
-
-          // 🔹 Кнопка x2 доход
-          _shopButton(
-            icon: Icons.bolt_rounded,
-            title: "x2 заработок (на 60 сек)",
-            description: "Удвоенный доход на 1 минуту",
-            color: Colors.orangeAccent,
-            onTap: _activateDoubleIncome,
+          const SizedBox(height: 10),
+          Text(
+            "Подожди до первого обновления 🎉",
+            style: GoogleFonts.poppins(
+              color: Colors.white70,
+              fontSize: 14,
+            ),
           ),
-
-          const SizedBox(height: 12),
-
-          // 🔹 Кнопка +100 золотых
-          _shopButton(
-            icon: Icons.play_circle_fill_rounded,
-            title: "+100 золотых монет",
-            description: "Посмотри рекламу, чтобы получить бонус",
-            color: Colors.amberAccent,
-            onTap: _getGoldReward,
-          ),
-
-          const SizedBox(height: 12),
-
-          if (_isDoubleActive)
-            _boostTimer(),
         ],
       ),
     );
   }
+}
 
+  // -------------------------------
+  // 🔒 ВРЕМЕННО ОТКЛЮЧЕННЫЙ КОД:
+  // -------------------------------
+
+  /*
   Widget _shopButton({
     required IconData icon,
     required String title,
@@ -123,7 +116,6 @@ class _ShopTabState extends State<ShopTab> {
 
     widget.onIncomeMultiplier(2.0);
 
-    // Через 60 сек вернуть всё обратно
     Future.delayed(const Duration(seconds: 60), () {
       if (mounted) {
         widget.onIncomeMultiplier(1.0);
@@ -135,7 +127,6 @@ class _ShopTabState extends State<ShopTab> {
   }
 
   void _getGoldReward() {
-    // Здесь позже будет логика показа рекламы
     widget.onGoldChange(100);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -159,4 +150,5 @@ class _ShopTabState extends State<ShopTab> {
       ),
     );
   }
-}
+  */
+//}

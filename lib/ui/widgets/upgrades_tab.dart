@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class UpgradesTab extends StatefulWidget {
-  final double money;
-  final Function(double) onMoneyChange;
+  final double views;
+  final Function(double) onViewsChange;
   final Function(double, double) onUpgrade;
 
   const UpgradesTab({
     super.key,
-    required this.money,
-    required this.onMoneyChange,
+    required this.views,
+    required this.onViewsChange,
     required this.onUpgrade,
   });
 
@@ -109,14 +109,22 @@ class _UpgradesTabState extends State<UpgradesTab> {
     var upgrade = upgrades[index];
     double price = upgrade['price'];
 
-    if (widget.money >= price) {
+    if (widget.views >= price) {
       setState(() {
         upgrades[index]['level']++;
         upgrades[index]['price'] *= 1.35;
       });
 
-      widget.onMoneyChange(-price);
+      widget.onViewsChange(-price); // 💰 списываем серебро
       widget.onUpgrade(upgrade['click'], upgrade['passive']);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("❌ Недостаточно серебра!"),
+          backgroundColor: Colors.redAccent.shade200,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
@@ -129,7 +137,7 @@ class _UpgradesTabState extends State<UpgradesTab> {
         child: Column(
           children: upgrades.map((item) {
             final int index = upgrades.indexOf(item);
-            final bool canBuy = widget.money >= item['price'];
+            final bool canBuy = widget.views >= item['price'];
             final int level = item['level'];
 
             return Container(
@@ -156,7 +164,7 @@ class _UpgradesTabState extends State<UpgradesTab> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Цена: ${item['price'].toStringAsFixed(0)} ₽',
+                        'Цена: ${item['price'].toStringAsFixed(0)} серебра',
                         style: GoogleFonts.poppins(
                           color: Colors.white54,
                           fontSize: 12,
