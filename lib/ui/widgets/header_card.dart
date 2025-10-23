@@ -3,7 +3,7 @@ import '../theme.dart';
 import 'stats_row.dart';
 
 class HeaderCard extends StatelessWidget {
-  final int views;
+  final double views;
   final int subs;
   final double money;
   final double income;
