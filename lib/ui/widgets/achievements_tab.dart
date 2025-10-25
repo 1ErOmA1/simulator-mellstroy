@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../widgets/toast_manager.dart';
 
-
 class Achievement {
   final String title;
   final String description;
@@ -69,7 +68,10 @@ class _AchievementsTabState extends State<AchievementsTab> {
 
   @override
   Widget build(BuildContext context) {
-    _checkAchievements(context);
+    // Проверяем достижения после построения интерфейса
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAchievements(context);
+    });
 
     return achievements.isEmpty
         ? Center(
@@ -86,17 +88,29 @@ class _AchievementsTabState extends State<AchievementsTab> {
             itemCount: achievements.length,
             itemBuilder: (context, index) {
               final a = achievements[index];
-              return Container(
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeInOut,
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color:
-                      a.unlocked ? Colors.green.withOpacity(0.1) : Colors.white10,
+                  color: a.unlocked
+                      ? Colors.green.withOpacity(0.1)
+                      : Colors.white10,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: a.unlocked ? Colors.greenAccent : Colors.white24,
                     width: 1,
                   ),
+                  boxShadow: a.unlocked
+                      ? [
+                          BoxShadow(
+                            color: Colors.greenAccent.withOpacity(0.2),
+                            blurRadius: 10,
+                            spreadRadius: 1,
+                          ),
+                        ]
+                      : [],
                 ),
                 child: Row(
                   children: [
@@ -161,19 +175,18 @@ class _AchievementsTabState extends State<AchievementsTab> {
   }
 
   void _unlockAchievement(int index, BuildContext context) {
-  setState(() {
-    achievements[index] = achievements[index].copyWith(unlocked: true);
-  });
+    setState(() {
+      achievements[index] = achievements[index].copyWith(unlocked: true);
+    });
 
-  // 🔇 ToastManager временно отключён:
-  // ToastManager().showToast(
-  //   context,
-  //   '🎉 Новое достижение: ${achievements[index].title}',
-  //   icon: Icons.emoji_events_rounded,
-  //   color: Colors.greenAccent,
-  // );
+    // Показываем сообщение при разблокировке
+    ToastManager().showToast(
+      context,
+      '🎉 Новое достижение: ${achievements[index].title}',
+      icon: Icons.emoji_events_rounded,
+      color: Colors.greenAccent,
+    );
 
-  debugPrint('🎉 Новое достижение: ${achievements[index].title}');
-}
-
+    debugPrint('🎉 Новое достижение: ${achievements[index].title}');
+  }
 }

@@ -111,33 +111,41 @@ class _BottomTabsState extends State<BottomTabs> {
             const SizedBox(width: 8),
             Expanded(
               child: _tabButton(
-                  "Достижения", Icons.emoji_events_outlined, showIcons, () {
-                _openFullScreen(
-                  "Достижения",
-                  AchievementsTab(
-                    coins: widget.silver.toInt(),
-                    gold: 0,
-                    level: 1,
-                  ),
-                );
-              }),
+                "Достижения",
+                Icons.emoji_events_outlined,
+                showIcons,
+                () {
+                  _openFullScreen(
+                    "Достижения",
+                    AchievementsTab(
+                      coins: widget.silver.toInt(),
+                      gold: 0, // ✅ добавлено обязательное поле
+                      level: 1,
+                    ),
+                  );
+                },
+              ),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: _tabButton(
-                  "Магазин", Icons.shopping_cart_outlined, showIcons, () {
-                _openFullScreen(
-                  "Магазин",
-                  ShopTab(
-                    onGoldChange: (gold) {
-                      print("Получено $gold золота");
-                    },
-                    onIncomeMultiplier: (multiplier) {
-                      print("x$multiplier доход активен");
-                    },
-                  ),
-                );
-              }),
+                "Магазин",
+                Icons.shopping_cart_outlined,
+                showIcons,
+                () {
+                  _openFullScreen(
+                    "Магазин",
+                    ShopTab(
+                      onGoldChange: (double gold) {
+                        debugPrint("Получено $gold золота");
+                      },
+                      onIncomeMultiplier: (double multiplier) {
+                        debugPrint("x$multiplier доход активен");
+                      },
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -145,8 +153,7 @@ class _BottomTabsState extends State<BottomTabs> {
     );
   }
 
-  Widget _tabButton(
-      String text, IconData icon, bool showIcon, VoidCallback onTap) {
+  Widget _tabButton(String text, IconData icon, bool showIcon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
