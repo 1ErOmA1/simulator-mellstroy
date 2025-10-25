@@ -1,3 +1,4 @@
+import 'dart:math'; // ⚙️ для pow()
 import 'package:flutter/material.dart';
 import '../theme.dart';
 import 'stats_row.dart';
@@ -51,9 +52,17 @@ class _HeaderCardState extends State<HeaderCard>
     super.dispose();
   }
 
+  /// 📈 Требуемый XP для перехода на следующий уровень (как в mell_home.dart)
+  int requiredXpForLevel(int currentLevel) {
+    if (currentLevel <= 1) return 100;
+    final double base = 1000.0; // XP для перехода 1 → 2
+    final double value = base * pow(1.05, (currentLevel - 2));
+    return value.round();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final int maxXp = 100 * widget.level; // синхронизация с LevelCard
+    final int maxXp = requiredXpForLevel(widget.level);
     final double progress = (widget.xp / maxXp).clamp(0.0, 1.0);
 
     final bool levelUp = progress >= 1.0;

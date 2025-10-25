@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:ui';
+import 'dart:math'; // для pow()
 import 'package:flutter/material.dart';
 import 'widgets/header_card.dart';
 import 'widgets/level_card.dart';
 import 'widgets/stream_image.dart';
 import 'widgets/bottom_tabs.dart';
 import 'theme.dart';
-import '../utils/audio_manager.dart'; // 🔊 Добавлено
+import '../utils/audio_manager.dart'; // 🔊 звуки
 
 class MellHome extends StatefulWidget {
   const MellHome({super.key});
@@ -17,28 +18,27 @@ class MellHome extends StatefulWidget {
 
 class _MellHomeState extends State<MellHome>
     with SingleTickerProviderStateMixin {
-  double views = 0; // 🪙 серебро
-  double silver = 1; // 💰 золото
+  double views = 0; // серебро
+  double silver = 0; // золото
   int subs = 0;
 
   double income = 0; // пассивный доход
-  double clickIncome = 0; // доход за клик
+  double clickIncome = 1; // доход за клик
 
-  int xp = 0;
+  int xp = 0; // текущий XP для этого уровня
   int level = 1;
-
-  int _currentLevelXp = 0; // Текущий XP для уровня
-  final int _xpForNextLevel = 1000; // XP для перехода на следующий уровень
 
   int _clickCount = 0;
 
   bool _showLevelCard = false;
-  bool _showLevelGlow = false; // ✨ Эффект свечения при апгрейде
+  bool _showLevelGlow = false;
 
   Timer? _timer;
 
   late AnimationController _cardController;
   late Animation<double> _scaleAnimation;
+
+  final AudioManager _audio = AudioManager();
 
   List<Map<String, dynamic>> upgradesData = [
     {
@@ -127,9 +127,6 @@ class _MellHomeState extends State<MellHome>
     },
   ];
 
-  final AudioManager _audio =
-      AudioManager(); // 🎧 Экземпляр звукового менеджера
-
   @override
   void initState() {
     super.initState();
@@ -161,19 +158,31 @@ class _MellHomeState extends State<MellHome>
     super.dispose();
   }
 
+  /// Требуемый XP для перехода с текущего уровня на следующий.
+  /// Правила:
+  /// - Для level == 1 (отображение у LevelCard) можно оставить 100, но
+  ///   реальное требование для перехода 1->2 = 1000.
+  /// - Для перехода на уровень 2 требуется 1000 XP.
+  /// - Каждый следующий уровень умножаем на 1.25.
+  int requiredXpForLevel(int currentLevel) {
+    if (currentLevel <= 1) return 100; // отображение/вместимость UI
+    final double base = 1000.0; // требование для перехода 1 -> 2
+    final double value = base * pow(1.05, (currentLevel - 2));
+    return value.round();
+  }
+
+  // Обновлённая логика нажатия на стрим — даёт XP и может повысить уровень.
   void _onStreamTap() {
     setState(() {
       views += clickIncome;
-      xp += 1;
-      _currentLevelXp += 1;
+      xp += 1; // накопление XP для текущего уровня
       _clickCount++;
 
-      // 🔊 Звук клика
+      // звук клика (если есть)
       _audio.play('sounds/click_sound.mp3');
 
       if (_clickCount % 1000 == 0) {
         silver += 1;
-        // 🔊 Звук монеты
         // _audio.play('sounds/coin_sound.mp3');
       }
 
@@ -181,33 +190,21 @@ class _MellHomeState extends State<MellHome>
         subs += 1;
       }
 
-      int xpToNextLevel = 100 * level;
-      // if (_currentLevelXp >= _xpForNextLevel) {
-      //   // ← Изменено
-      //   _currentLevelXp = 0; // ← Добавлено
-      //   level++;
-
-      //   // Увеличиваем XP для следующего уровня на 25%
-      //   _xpForNextLevel = (_xpForNextLevel * 1.25).round(); // ← Добавлено
-
-      //   _cardController.forward(from: 0);
-
-      //   // 🌟 Эффект свечения при повышении уровня
-      //   setState(() => _showLevelGlow = true);
-      //   Future.delayed(const Duration(seconds: 1), () {
-      //     if (mounted) setState(() => _showLevelGlow = false);
-      //   });
-      // }
-      if (xp >= xpToNextLevel) {
+      // цикл повышения уровней (поддерживает множественные повышения)
+      int xpToNextLevel = requiredXpForLevel(level);
+      while (xp >= xpToNextLevel) {
         xp -= xpToNextLevel;
         level++;
         _cardController.forward(from: 0);
 
-        // 🌟 Эффект свечения при повышении уровня
+        // эффект свечения
         setState(() => _showLevelGlow = true);
         Future.delayed(const Duration(seconds: 1), () {
           if (mounted) setState(() => _showLevelGlow = false);
         });
+
+        // пересчитать требование для следующего уровня
+        xpToNextLevel = requiredXpForLevel(level);
       }
     });
   }
@@ -239,7 +236,7 @@ class _MellHomeState extends State<MellHome>
 
     final overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        top: MediaQuery.of(context).padding.top + 30, // чуть выше
+        top: MediaQuery.of(context).padding.top + 30,
         left: 0,
         right: 0,
         child: Center(
@@ -251,7 +248,8 @@ class _MellHomeState extends State<MellHome>
               return Opacity(opacity: value, child: child);
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               margin: const EdgeInsets.symmetric(horizontal: 40),
               decoration: BoxDecoration(
                 color: Colors.greenAccent.shade400.withOpacity(0.95),
@@ -280,8 +278,6 @@ class _MellHomeState extends State<MellHome>
     );
 
     overlayState.insert(overlayEntry);
-
-    // 🔹 здесь мы используем замыкание, чтобы linter не ругался
     Future.delayed(const Duration(milliseconds: 1500), () {
       overlayEntry.remove();
     });
@@ -294,7 +290,6 @@ class _MellHomeState extends State<MellHome>
     if (views >= price) {
       setState(() {
         upgradesData[index]['level']++;
-        // upgradesData[index]['price'] *= 1.35;
         upgradesData[index]['price'] = price * (1.2 + level * 0.05);
         views -= price;
         clickIncome += upgrade['click'];
@@ -325,7 +320,6 @@ class _MellHomeState extends State<MellHome>
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // 🌟 Эффект мягкого свечения при апгрейде уровня
               if (_showLevelGlow)
                 AnimatedOpacity(
                   opacity: _showLevelGlow ? 1 : 0,
@@ -360,7 +354,6 @@ class _MellHomeState extends State<MellHome>
                     ),
                   ),
 
-                  // 🎯 Нижние вкладки
                   Padding(
                     padding: const EdgeInsets.all(18.0),
                     child: BottomTabs(
@@ -374,7 +367,6 @@ class _MellHomeState extends State<MellHome>
                 ],
               ),
 
-              // 🎥 Центральная зона стрима
               Positioned(
                 bottom: screenHeight * 0.06,
                 left: 0,
@@ -384,7 +376,6 @@ class _MellHomeState extends State<MellHome>
                 ),
               ),
 
-              // 🌟 Анимация карточки уровня
               if (_showLevelCard)
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
