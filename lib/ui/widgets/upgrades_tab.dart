@@ -1,132 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class UpgradesTab extends StatefulWidget {
+class UpgradesTab extends StatelessWidget {
   final double views;
-  final Function(double) onViewsChange;
-  final Function(double, double) onUpgrade;
+  final List<Map<String, dynamic>> upgrades;
+  final Function(int) onBuyUpgrade;
 
   const UpgradesTab({
     super.key,
     required this.views,
-    required this.onViewsChange,
-    required this.onUpgrade,
+    required this.upgrades,
+    required this.onBuyUpgrade,
   });
-
-  @override
-  State<UpgradesTab> createState() => _UpgradesTabState();
-}
-
-class _UpgradesTabState extends State<UpgradesTab> {
-  List<Map<String, dynamic>> upgrades = [
-    {
-      'name': 'Камера',
-      'click': 0.05,
-      'passive': 0.025,
-      'price': 100.0,
-      'level': 0
-    },
-    {
-      'name': 'Подставка под камеру',
-      'click': 0.03,
-      'passive': 0.01,
-      'price': 50.0,
-      'level': 0
-    },
-    {
-      'name': 'Микрофон',
-      'click': 0.04,
-      'passive': 0.015,
-      'price': 80.0,
-      'level': 0
-    },
-    {
-      'name': 'Источник света',
-      'click': 0.06,
-      'passive': 0.02,
-      'price': 120.0,
-      'level': 0
-    },
-    {
-      'name': 'Одежда',
-      'click': 0.02,
-      'passive': 0.01,
-      'price': 40.0,
-      'level': 0
-    },
-    {
-      'name': 'Причёска и внешность',
-      'click': 0.03,
-      'passive': 0.015,
-      'price': 70.0,
-      'level': 0
-    },
-    {
-      'name': 'Часы',
-      'click': 0.01,
-      'passive': 0.005,
-      'price': 30.0,
-      'level': 0
-    },
-    {
-      'name': 'Харизма',
-      'click': 0.04,
-      'passive': 0.03,
-      'price': 150.0,
-      'level': 0
-    },
-    {
-      'name': 'Импровизация',
-      'click': 0.03,
-      'passive': 0.02,
-      'price': 130.0,
-      'level': 0
-    },
-    {
-      'name': 'Эрудиция',
-      'click': 0.02,
-      'passive': 0.02,
-      'price': 110.0,
-      'level': 0
-    },
-    {
-      'name': 'Остроумие',
-      'click': 0.04,
-      'passive': 0.02,
-      'price': 100.0,
-      'level': 0
-    },
-    {
-      'name': 'Эмоциональность',
-      'click': 0.05,
-      'passive': 0.03,
-      'price': 160.0,
-      'level': 0
-    },
-  ];
-
-  void buyUpgrade(int index) {
-    var upgrade = upgrades[index];
-    double price = upgrade['price'];
-
-    if (widget.views >= price) {
-      setState(() {
-        upgrades[index]['level']++;
-        upgrades[index]['price'] *= 1.35;
-      });
-
-      widget.onViewsChange(-price); // 💰 списываем серебро
-      widget.onUpgrade(upgrade['click'], upgrade['passive']);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text("❌ Недостаточно серебра!"),
-          backgroundColor: Colors.redAccent.shade200,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -137,7 +22,7 @@ class _UpgradesTabState extends State<UpgradesTab> {
         child: Column(
           children: upgrades.map((item) {
             final int index = upgrades.indexOf(item);
-            final bool canBuy = widget.views >= item['price'];
+            final bool canBuy = views >= item['price'];
             final int level = item['level'];
 
             return Container(
@@ -155,7 +40,7 @@ class _UpgradesTabState extends State<UpgradesTab> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${item['name']} (x$level)',
+                        '${item['name']} (ур. $level)',
                         style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontWeight: FontWeight.w500,
@@ -173,7 +58,7 @@ class _UpgradesTabState extends State<UpgradesTab> {
                     ],
                   ),
                   ElevatedButton(
-                    onPressed: canBuy ? () => buyUpgrade(index) : null,
+                    onPressed: canBuy ? () => onBuyUpgrade(index) : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: canBuy
                           ? const Color(0xFFFFC857)

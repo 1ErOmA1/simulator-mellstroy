@@ -9,11 +9,16 @@ class BottomTabs extends StatefulWidget {
   final Function(double) onSilverChange;
   final Function(double, double) onUpgrade;
 
+  final List<Map<String, dynamic>> upgrades;
+  final Function(int) onBuyUpgrade;
+
   const BottomTabs({
     super.key,
     required this.silver,
     required this.onSilverChange,
     required this.onUpgrade,
+    required this.upgrades,
+    required this.onBuyUpgrade,
   });
 
   @override
@@ -100,10 +105,17 @@ class _BottomTabsState extends State<BottomTabs> {
               child: _tabButton("Улучшения", Icons.upgrade, showIcons, () {
                 _openFullScreen(
                   "Улучшения",
-                  UpgradesTab(
-                    views: widget.silver,
-                    onViewsChange: widget.onSilverChange,
-                    onUpgrade: widget.onUpgrade,
+                  StatefulBuilder(
+                    builder: (context, setModalState) {
+                      return UpgradesTab(
+                        views: widget.silver,
+                        upgrades: widget.upgrades,
+                        onBuyUpgrade: (index) {
+                          widget.onBuyUpgrade(index);
+                          setModalState(() {}); // 🔄 обновляем UI вкладки
+                        },
+                      );
+                    },
                   ),
                 );
               }),
@@ -111,33 +123,41 @@ class _BottomTabsState extends State<BottomTabs> {
             const SizedBox(width: 8),
             Expanded(
               child: _tabButton(
-                  "Достижения", Icons.emoji_events_outlined, showIcons, () {
-                _openFullScreen(
-                  "Достижения",
-                  AchievementsTab(
-                    coins: widget.silver.toInt(),
-                    gold: 0,
-                    level: 1,
-                  ),
-                );
-              }),
+                "Достижения",
+                Icons.emoji_events_outlined,
+                showIcons,
+                () {
+                  _openFullScreen(
+                    "Достижения",
+                    AchievementsTab(
+                      coins: widget.silver.toInt(),
+                      gold: 0,
+                      level: 1,
+                    ),
+                  );
+                },
+              ),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: _tabButton(
-                  "Магазин", Icons.shopping_cart_outlined, showIcons, () {
-                _openFullScreen(
-                  "Магазин",
-                  ShopTab(
-                    onGoldChange: (gold) {
-                      print("Получено $gold золота");
-                    },
-                    onIncomeMultiplier: (multiplier) {
-                      print("x$multiplier доход активен");
-                    },
-                  ),
-                );
-              }),
+                "Магазин",
+                Icons.shopping_cart_outlined,
+                showIcons,
+                () {
+                  _openFullScreen(
+                    "Магазин",
+                    ShopTab(
+                      onGoldChange: (gold) {
+                        print("Получено $gold золота");
+                      },
+                      onIncomeMultiplier: (multiplier) {
+                        print("x$multiplier доход активен");
+                      },
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),

@@ -37,7 +37,7 @@ class StatsRow extends StatelessWidget {
         ),
         StatBox(
           icon: Icons.trending_up,
-          value: income.toStringAsFixed(0),
+          value: income.toStringAsFixed(2),
           label: 'в сек',
         ),
       ],

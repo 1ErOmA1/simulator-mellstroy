@@ -16,7 +16,7 @@ class MellHome extends StatefulWidget {
 
 class _MellHomeState extends State<MellHome>
     with SingleTickerProviderStateMixin {
-  double views = 0; // 🪙 серебро
+  double views = 990; // 🪙 серебро
   double silver = 0; // 💰 золото (в будущем)
   int subs = 0;
 
@@ -26,11 +26,100 @@ class _MellHomeState extends State<MellHome>
   int xp = 0;
   int level = 1;
 
+  int _clickCount = 990;
+
   bool _showLevelCard = false;
   Timer? _timer;
 
   late AnimationController _cardController;
   late Animation<double> _scaleAnimation;
+
+  List<Map<String, dynamic>> upgradesData = [
+    {
+      'name': 'Камера',
+      'click': 0.05,
+      'passive': 0.025,
+      'price': 100.0,
+      'level': 0
+    },
+    {
+      'name': 'Подставка под камеру',
+      'click': 0.03,
+      'passive': 0.01,
+      'price': 50.0,
+      'level': 0
+    },
+    {
+      'name': 'Микрофон',
+      'click': 0.04,
+      'passive': 0.015,
+      'price': 80.0,
+      'level': 0
+    },
+    {
+      'name': 'Источник света',
+      'click': 0.06,
+      'passive': 0.02,
+      'price': 120.0,
+      'level': 0
+    },
+    {
+      'name': 'Одежда',
+      'click': 0.02,
+      'passive': 0.01,
+      'price': 40.0,
+      'level': 0
+    },
+    {
+      'name': 'Причёска и внешность',
+      'click': 0.03,
+      'passive': 0.015,
+      'price': 70.0,
+      'level': 0
+    },
+    {
+      'name': 'Часы',
+      'click': 0.01,
+      'passive': 0.005,
+      'price': 30.0,
+      'level': 0
+    },
+    {
+      'name': 'Харизма',
+      'click': 0.04,
+      'passive': 0.03,
+      'price': 150.0,
+      'level': 0
+    },
+    {
+      'name': 'Импровизация',
+      'click': 0.03,
+      'passive': 0.02,
+      'price': 130.0,
+      'level': 0
+    },
+    {
+      'name': 'Эрудиция',
+      'click': 0.02,
+      'passive': 0.02,
+      'price': 110.0,
+      'level': 0
+    },
+    {
+      'name': 'Остроумие',
+      'click': 0.04,
+      'passive': 0.02,
+      'price': 100.0,
+      'level': 0
+    },
+    {
+      'name': 'Эмоциональность',
+      'click': 0.05,
+      'passive': 0.03,
+      'price': 160.0,
+      'level': 0
+    },
+  ];
 
   @override
   void initState() {
@@ -67,14 +156,15 @@ class _MellHomeState extends State<MellHome>
     setState(() {
       views += clickIncome;
       xp += 1;
+      _clickCount++;
 
-      if (views % 100 == 0) {
-        subs += 1;
+      if (_clickCount % 1000 == 0) {
         silver += 1;
       }
 
-      int earnedSubs = (views ~/ 100).toInt();
-      if (earnedSubs > subs) subs = earnedSubs;
+      if (_clickCount % 10 == 0) {
+        subs += 1;
+      }
 
       int xpToNextLevel = 100 * level;
       if (xp >= xpToNextLevel) {
@@ -104,6 +194,85 @@ class _MellHomeState extends State<MellHome>
       clickIncome += click;
       income += passive;
     });
+  }
+
+  void _showPurchaseNotification(String upgradeName) {
+    final overlayState = Overlay.maybeOf(context);
+    if (overlayState == null) return;
+
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).padding.top + 30, // чуть выше
+        left: 0,
+        right: 0,
+        child: Center(
+          child: TweenAnimationBuilder<double>(
+            duration: const Duration(milliseconds: 400),
+            tween: Tween(begin: 0, end: 1),
+            curve: Curves.easeOut,
+            builder: (context, value, child) {
+              return Opacity(opacity: value, child: child);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              margin: const EdgeInsets.symmetric(horizontal: 40),
+              decoration: BoxDecoration(
+                color: Colors.greenAccent.shade400.withOpacity(0.95),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.greenAccent.withOpacity(0.4),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+              child: Text(
+                '✅ $upgradeName улучшено!',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlayState.insert(overlayEntry);
+
+    // 🔹 здесь мы используем замыкание, чтобы linter не ругался
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      overlayEntry.remove();
+    });
+  }
+
+  void _buyUpgrade(int index) {
+    var upgrade = upgradesData[index];
+    double price = upgrade['price'];
+
+    if (views >= price) {
+      setState(() {
+        upgradesData[index]['level']++;
+        // upgradesData[index]['price'] *= 1.35;
+        upgradesData[index]['price'] = price * (1.2 + level * 0.05);
+        views -= price;
+        clickIncome += upgrade['click'];
+        income += upgrade['passive'];
+      });
+      _showPurchaseNotification(upgrade['name']);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("❌ Недостаточно серебра!"),
+          backgroundColor: Colors.redAccent.shade200,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override
@@ -141,6 +310,8 @@ class _MellHomeState extends State<MellHome>
                       silver: views,
                       onSilverChange: _changeViews,
                       onUpgrade: _applyUpgrade,
+                      upgrades: upgradesData,
+                      onBuyUpgrade: _buyUpgrade,
                     ),
                   ),
                 ],
