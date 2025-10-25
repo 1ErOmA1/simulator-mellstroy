@@ -6,6 +6,7 @@ import 'widgets/level_card.dart';
 import 'widgets/stream_image.dart';
 import 'widgets/bottom_tabs.dart';
 import 'theme.dart';
+import '../utils/audio_manager.dart'; // 🔊 Добавлено
 
 class MellHome extends StatefulWidget {
   const MellHome({super.key});
@@ -14,23 +15,26 @@ class MellHome extends StatefulWidget {
   State<MellHome> createState() => _MellHomeState();
 }
 
-class _MellHomeState extends State<MellHome>
-    with SingleTickerProviderStateMixin {
+class _MellHomeState extends State<MellHome> with SingleTickerProviderStateMixin {
   double views = 0; // 🪙 серебро
-  double silver = 0; // 💰 золото (в будущем)
+  double silver = 0; // 💰 золото
   int subs = 0;
 
-  double income = 0; // пассивный доход в серебре
+  double income = 0; // пассивный доход
   double clickIncome = 1; // доход за клик
 
   int xp = 0;
   int level = 1;
 
   bool _showLevelCard = false;
+  bool _showLevelGlow = false; // ✨ Эффект свечения при апгрейде
+
   Timer? _timer;
 
   late AnimationController _cardController;
   late Animation<double> _scaleAnimation;
+
+  final AudioManager _audio = AudioManager(); // 🎧 Экземпляр звукового менеджера
 
   @override
   void initState() {
@@ -68,9 +72,14 @@ class _MellHomeState extends State<MellHome>
       views += clickIncome;
       xp += 1;
 
+      // 🔊 Звук клика
+      _audio.play('sounds/click_sound.mp3');
+
       if (views % 100 == 0) {
         subs += 1;
         silver += 1;
+        // 🔊 Звук монеты
+        _audio.play('sounds/coin_sound.mp3');
       }
 
       int earnedSubs = (views ~/ 100).toInt();
@@ -81,6 +90,12 @@ class _MellHomeState extends State<MellHome>
         xp -= xpToNextLevel;
         level++;
         _cardController.forward(from: 0);
+
+        // 🌟 Эффект свечения при повышении уровня
+        setState(() => _showLevelGlow = true);
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) setState(() => _showLevelGlow = false);
+        });
       }
     });
   }
@@ -114,17 +129,34 @@ class _MellHomeState extends State<MellHome>
       backgroundColor: Colors.black,
       resizeToAvoidBottomInset: true,
       body: Container(
-        decoration: kAppBackground,
+        decoration: getBackgroundForLevel(level),
         child: SafeArea(
           child: Stack(
             alignment: Alignment.center,
             children: [
+              // 🌟 Эффект мягкого свечения при апгрейде уровня
+              if (_showLevelGlow)
+                AnimatedOpacity(
+                  opacity: _showLevelGlow ? 1 : 0,
+                  duration: const Duration(milliseconds: 400),
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      gradient: RadialGradient(
+                        colors: [
+                          Color(0x80FFFFFF),
+                          Colors.transparent,
+                        ],
+                        radius: 0.8,
+                      ),
+                    ),
+                  ),
+                ),
+
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 18, vertical: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                     child: HeaderCard(
                       views: views,
                       subs: subs,
@@ -135,6 +167,8 @@ class _MellHomeState extends State<MellHome>
                       onAvatarTap: _toggleLevelCard,
                     ),
                   ),
+
+                  // 🎯 Нижние вкладки
                   Padding(
                     padding: const EdgeInsets.all(18.0),
                     child: BottomTabs(
@@ -145,6 +179,8 @@ class _MellHomeState extends State<MellHome>
                   ),
                 ],
               ),
+
+              // 🎥 Центральная зона стрима
               Positioned(
                 bottom: screenHeight * 0.06,
                 left: 0,
@@ -153,6 +189,8 @@ class _MellHomeState extends State<MellHome>
                   child: StreamImage(onTap: _onStreamTap),
                 ),
               ),
+
+              // 🌟 Анимация карточки уровня
               if (_showLevelCard)
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
