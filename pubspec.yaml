@@ -9,6 +9,8 @@ dependencies:
   flutter:
     sdk: flutter
   google_fonts: ^6.3.2
+  audioplayers: ^6.1.0
+
 
 dev_dependencies:
   flutter_test:
@@ -20,7 +22,13 @@ flutter:
   assets:
     - assets/images/streamer.png
     - assets/images/icon.png
-    - assets/images/background.png
+    - assets/backgrounds/room_1.png
+    - assets/backgrounds/room_2.png
+    - assets/backgrounds/room_3.png
+    - assets/backgrounds/room_4.png
     - assets/images/silver_coin.png
     - assets/images/gold_coin.png
+    - assets/sounds/click_sound.mp3
+    - assets/sounds/coin_sound.mp3
+    - assets/sounds/background_music.mp3
 
