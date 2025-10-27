@@ -29,12 +29,16 @@ class AchievementsTab extends StatefulWidget {
   final int coins;
   final int gold;
   final int level;
+  final int clicks;
+  final int upgradesBought;
 
   const AchievementsTab({
     super.key,
     required this.coins,
     required this.gold,
     required this.level,
+    this.clicks = 0,
+    this.upgradesBought = 0,
   });
 
   @override
@@ -48,27 +52,97 @@ class _AchievementsTabState extends State<AchievementsTab> {
   void initState() {
     super.initState();
     achievements = [
-      Achievement(
+      // 💰 Серебро
+      const Achievement(
         title: "Первые 100 монет 🪙",
         description: "Заработай 100 серебряных монет",
         imagePath: "assets/images/silver_coin.png",
       ),
-      Achievement(
+      const Achievement(
+        title: "Серебряный мастер 💎",
+        description: "Заработай 10,000 серебра",
+        imagePath: "assets/images/silver_coin.png",
+      ),
+      const Achievement(
+        title: "Серебряный миллиардер 🏦",
+        description: "Заработай 1,000,000 серебра",
+        imagePath: "assets/images/silver_coin.png",
+      ),
+
+      // 🟡 Золото
+      const Achievement(
         title: "Золотой старт 🏅",
         description: "Получить 1 золотую монету",
         imagePath: "assets/images/gold_coin.png",
       ),
-      Achievement(
+      const Achievement(
+        title: "Золотой миллионер 👑",
+        description: "Получить 10 золотых монет",
+        imagePath: "assets/images/gold_coin.png",
+      ),
+
+      // 🧠 Уровень
+      const Achievement(
         title: "Путь стримера 🚀",
         description: "Достигни 5 уровня популярности",
         imagePath: "assets/images/level_up.png",
+      ),
+      const Achievement(
+        title: "Легенда эфира 🌟",
+        description: "Достигни 20 уровня",
+        imagePath: "assets/images/level_up.png",
+      ),
+      const Achievement(
+        title: "Бессмертный стример 🔥",
+        description: "Достигни 50 уровня",
+        imagePath: "assets/images/level_up.png",
+      ),
+
+      // 🖱️ Клики
+      const Achievement(
+        title: "Первые шаги 👆",
+        description: "Сделай 100 кликов",
+        imagePath: "assets/images/tap_icon.png",
+      ),
+      const Achievement(
+        title: "Фанат кликов ⚡",
+        description: "Сделай 10,000 кликов",
+        imagePath: "assets/images/tap_icon.png",
+      ),
+      const Achievement(
+        title: "Царь кликов 💥",
+        description: "Сделай 1,000,000 кликов",
+        imagePath: "assets/images/tap_icon.png",
+      ),
+
+      // 🧩 Улучшения
+      const Achievement(
+        title: "Первое улучшение 🔧",
+        description: "Купи одно улучшение",
+        imagePath: "assets/images/upgrade_icon.png",
+      ),
+      const Achievement(
+        title: "Инженер успеха ⚙️",
+        description: "Купи 10 улучшений",
+        imagePath: "assets/images/upgrade_icon.png",
+      ),
+      const Achievement(
+        title: "Гений апгрейдов 🧠",
+        description: "Купи 100 улучшений",
+        imagePath: "assets/images/upgrade_icon.png",
+      ),
+
+      // 🌍 Особое
+      const Achievement(
+        title: "Ветеран стримов 🎥",
+        description: "Проведи тысячи эфиров и не сдайся!",
+        imagePath: "assets/images/stream_icon.png",
       ),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
-    // Проверяем достижения после построения интерфейса
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAchievements(context);
     });
@@ -94,9 +168,8 @@ class _AchievementsTabState extends State<AchievementsTab> {
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: a.unlocked
-                      ? Colors.green.withOpacity(0.1)
-                      : Colors.white10,
+                  color:
+                      a.unlocked ? Colors.green.withOpacity(0.1) : Colors.white10,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: a.unlocked ? Colors.greenAccent : Colors.white24,
@@ -105,7 +178,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
                   boxShadow: a.unlocked
                       ? [
                           BoxShadow(
-                            color: Colors.greenAccent.withOpacity(0.2),
+                            color: Colors.greenAccent.withOpacity(0.25),
                             blurRadius: 10,
                             spreadRadius: 1,
                           ),
@@ -118,7 +191,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
                       a.imagePath,
                       width: 36,
                       height: 36,
-                      errorBuilder: (context, _, __) => const Icon(
+                      errorBuilder: (_, __, ___) => const Icon(
                         Icons.emoji_events,
                         color: Colors.white54,
                         size: 32,
@@ -163,30 +236,57 @@ class _AchievementsTabState extends State<AchievementsTab> {
     for (int i = 0; i < achievements.length; i++) {
       final a = achievements[i];
       if (!a.unlocked) {
-        if (a.title.contains("100 монет") && widget.coins >= 100) {
-          _unlockAchievement(i, context);
-        } else if (a.title.contains("Золотой") && widget.gold >= 1) {
-          _unlockAchievement(i, context);
-        } else if (a.title.contains("стримера") && widget.level >= 5) {
-          _unlockAchievement(i, context);
+        final c = widget.coins;
+        final g = widget.gold;
+        final l = widget.level;
+        final clicks = widget.clicks;
+        final upgrades = widget.upgradesBought;
+
+        if (a.title.contains("100 монет") && c >= 100) {
+          _unlock(i, context);
+        } else if (a.title.contains("мастер") && c >= 10000) {
+          _unlock(i, context);
+        } else if (a.title.contains("миллиардер") && c >= 1000000) {
+          _unlock(i, context);
+        } else if (a.title.contains("Золотой старт") && g >= 1) {
+          _unlock(i, context);
+        } else if (a.title.contains("миллионер") && g >= 10) {
+          _unlock(i, context);
+        } else if (a.title.contains("стримера") && l >= 5) {
+          _unlock(i, context);
+        } else if (a.title.contains("Легенда") && l >= 20) {
+          _unlock(i, context);
+        } else if (a.title.contains("Бессмертный") && l >= 50) {
+          _unlock(i, context);
+        } else if (a.title.contains("Первые шаги") && clicks >= 100) {
+          _unlock(i, context);
+        } else if (a.title.contains("Фанат кликов") && clicks >= 10000) {
+          _unlock(i, context);
+        } else if (a.title.contains("Царь кликов") && clicks >= 1000000) {
+          _unlock(i, context);
+        } else if (a.title.contains("Первое улучшение") && upgrades >= 1) {
+          _unlock(i, context);
+        } else if (a.title.contains("Инженер") && upgrades >= 10) {
+          _unlock(i, context);
+        } else if (a.title.contains("Гений") && upgrades >= 100) {
+          _unlock(i, context);
+        } else if (a.title.contains("Ветеран") && (clicks >= 100000 && l >= 30)) {
+          _unlock(i, context);
         }
       }
     }
   }
 
-  void _unlockAchievement(int index, BuildContext context) {
+  void _unlock(int i, BuildContext context) {
     setState(() {
-      achievements[index] = achievements[index].copyWith(unlocked: true);
+      achievements[i] = achievements[i].copyWith(unlocked: true);
     });
 
-    // Показываем сообщение при разблокировке
     ToastManager().showToast(
       context,
-      '🎉 Новое достижение: ${achievements[index].title}',
+      '🎉 Новое достижение: ${achievements[i].title}',
       icon: Icons.emoji_events_rounded,
       color: Colors.greenAccent,
     );
-
-    debugPrint('🎉 Новое достижение: ${achievements[index].title}');
   }
 }
